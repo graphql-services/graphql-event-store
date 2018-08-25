@@ -10,9 +10,11 @@ export { Store } from 'store/base.store';
 @Injectable()
 export class StoreFactory {
   getConnection(): Store {
-    const dbUrl = parse(ENV.DATABASE_URL);
+    const db_url = ENV.DATABASE_URL || 'memory';
+    const dbUrl = parse(db_url);
 
     if (dbUrl.path === 'memory') {
+      global.console.log('Running store in memory!');
       return new MemoryStore();
     }
 
@@ -27,7 +29,7 @@ export class StoreFactory {
       if (type in allowedTypes) {
         return new DatabaseStore({
           type,
-          url: ENV.DATABASE_URL,
+          url: db_url,
         });
       } else {
         throw new Error(

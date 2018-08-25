@@ -18,6 +18,9 @@ export class AppService {
 
   getSchema(): GraphQLSchema {
     const string = this.loadTypes('./**/*.graphql').join('\n');
+    if (string === '') {
+      throw new Error('No GraphQL schema files found (*.grpahql)');
+    }
     const modelSchema = this.modelService.parseModelSchema(string);
     return this.modelService.getGraphQLSchema(modelSchema);
   }

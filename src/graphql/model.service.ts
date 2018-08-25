@@ -23,6 +23,7 @@ import {
   GraphQLList,
   GraphQLEnumType,
   GraphQLEnumValueConfigMap,
+  getNamedType,
 } from 'graphql';
 import { ResolverService } from './resolver.service';
 import { StoreEvent } from 'store/base.store';
@@ -30,16 +31,29 @@ import { StoreEvent } from 'store/base.store';
 class EntityField {
   constructor(private readonly config: { name: string; type: GraphQLType }) {}
 
+  private isReference(): boolean {
+    return getNullableType(this.config.type) instanceof GraphQLList;
+  }
+
   get name(): string {
     return this.config.name;
   }
+
   get outputType(): GraphQLOutputType {
+    if (this.isReference()) {
+      return new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLID)));
+    }
     return assertOutputType(this.config.type);
   }
+
   get inputType(): GraphQLInputType {
+    if (this.isReference()) {
+      return new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLID)));
+    }
     return assertInputType(this.config.type);
   }
 }
+
 class Entity {
   constructor(
     private readonly config: { name: string; fields: EntityField[] },
@@ -48,9 +62,11 @@ class Entity {
   get name(): string {
     return this.config.name;
   }
+
   get fields(): EntityField[] {
     return this.config.fields;
   }
+
   outputFieldMap(): GraphQLFieldConfigMap<any, any> {
     const fields: GraphQLFieldConfigMap<any, any> = {};
     for (const field of this.fields) {
