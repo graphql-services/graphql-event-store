@@ -25,7 +25,7 @@ export class StoreFactory {
       });
     } else {
       const type = (dbUrl.protocol || '').replace(':', '') as any;
-      const allowedTypes = ['mysql', 'mssql', 'mariadb', 'postgres'];
+      const allowedTypes = ['mysql', 'mssql', 'mariadb', 'postgres', 'mongodb'];
       if (type in allowedTypes) {
         return new DatabaseStore({
           type,

@@ -1,4 +1,4 @@
-import { Store, StoreEvent } from '../base.store';
+import { Store } from '../base.store';
 import {
   createConnection,
   Repository,
@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { Event } from './model/event.entity';
 import { ENV } from 'env';
+import { StoreEvent } from '../store-event.model';
 
 export class DatabaseStore extends Store {
   private repository?: Repository<Event>;

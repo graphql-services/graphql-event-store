@@ -1,30 +1,11 @@
 import * as diff from 'changeset';
 import { v4 } from 'uuid';
-
-export enum StoreEventType {
-  CREATED = 'CREATED',
-  UPDATED = 'UPDATED',
-  DELETED = 'DELETED',
-}
-
-export interface StoreEventData {
-  [key: string]: any;
-}
-export interface StoreEventOutputData extends StoreEventData {
-  id: string;
-  createdAt: Date;
-  updatedAt?: Date;
-  deletedAt?: Date;
-}
-
-export interface StoreEvent {
-  id: string;
-  entity: string;
-  entityId: string;
-  data: StoreEventData | null;
-  type: StoreEventType;
-  date: Date;
-}
+import {
+  StoreEvent,
+  StoreEventData,
+  StoreEventOutputData,
+  StoreEventType,
+} from './store-event.model';
 
 export class Store {
   async getEvents(props: {

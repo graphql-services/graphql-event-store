@@ -1,171 +1,27 @@
-import { Injectable, Module } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   GraphQLSchema,
   parse,
   GraphQLObjectType,
   ObjectTypeDefinitionNode,
   GraphQLFieldConfigMap,
-  assertOutputType,
   typeFromAST,
   buildSchema,
-  GraphQLType,
   GraphQLFieldConfig,
   GraphQLID,
   GraphQLBoolean,
-  GraphQLInputType,
   GraphQLInputObjectType,
-  GraphQLOutputType,
   GraphQLNonNull,
-  GraphQLInputFieldConfigMap,
-  assertInputType,
-  getNullableType,
-  GraphQLString,
-  GraphQLList,
-  GraphQLEnumType,
-  GraphQLEnumValueConfigMap,
-  getNamedType,
 } from 'graphql';
 import { ResolverService } from './resolver.service';
-import { StoreEvent } from 'store/base.store';
-
-class EntityField {
-  constructor(private readonly config: { name: string; type: GraphQLType }) {}
-
-  private isReference(): boolean {
-    return getNullableType(this.config.type) instanceof GraphQLList;
-  }
-
-  get name(): string {
-    return this.config.name;
-  }
-
-  get outputType(): GraphQLOutputType {
-    if (this.isReference()) {
-      return new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLID)));
-    }
-    return assertOutputType(this.config.type);
-  }
-
-  get inputType(): GraphQLInputType {
-    if (this.isReference()) {
-      return new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLID)));
-    }
-    return assertInputType(this.config.type);
-  }
-}
-
-class Entity {
-  constructor(
-    private readonly config: { name: string; fields: EntityField[] },
-  ) {}
-
-  get name(): string {
-    return this.config.name;
-  }
-
-  get fields(): EntityField[] {
-    return this.config.fields;
-  }
-
-  outputFieldMap(): GraphQLFieldConfigMap<any, any> {
-    const fields: GraphQLFieldConfigMap<any, any> = {};
-    for (const field of this.fields) {
-      fields[field.name] = { type: field.outputType };
-    }
-    fields.id = { type: new GraphQLNonNull(GraphQLID) };
-    fields.createdAt = { type: new GraphQLNonNull(GraphQLString) };
-    fields.updatedAt = { type: GraphQLString };
-    return fields;
-  }
-
-  inputFieldMap(optionals: boolean = false): GraphQLInputFieldConfigMap {
-    const fields: GraphQLInputFieldConfigMap = {};
-    for (const field of this.fields) {
-      fields[field.name] = {
-        type: optionals ? getNullableType(field.inputType) : field.inputType,
-      };
-    }
-    return fields;
-  }
-
-  private _objectType?: GraphQLObjectType;
-  getObjectType(): GraphQLObjectType {
-    if (!this._objectType) {
-      this._objectType = new GraphQLObjectType({
-        name: this.name,
-        fields: this.outputFieldMap(),
-      });
-    }
-
-    return this._objectType;
-  }
-}
-class ModelSchema {
-  constructor(private readonly config: { entities: Entity[] }) {}
-  get entities(): Entity[] {
-    return this.config.entities;
-  }
-
-  private entitiesEnumType?: GraphQLEnumType;
-  getEntitiesEnumType(): GraphQLEnumType {
-    if (!this.entitiesEnumType) {
-      const values: GraphQLEnumValueConfigMap = {};
-      for (const entity of this.config.entities) {
-        values[entity.name] = { value: entity.name };
-      }
-
-      this.entitiesEnumType = new GraphQLEnumType({
-        values,
-        name: 'EventEntities',
-      });
-    }
-    return this.entitiesEnumType;
-  }
-
-  private eventType?: GraphQLOutputType;
-  getEventType(): GraphQLOutputType {
-    if (!this.eventType) {
-      this.eventType = new GraphQLNonNull(
-        new GraphQLList(
-          new GraphQLObjectType({
-            name: 'Event',
-            fields: {
-              id: { type: new GraphQLNonNull(GraphQLID) },
-              entityId: { type: new GraphQLNonNull(GraphQLID) },
-              entity: { type: new GraphQLNonNull(this.getEntitiesEnumType()) },
-              data: {
-                type: new GraphQLNonNull(GraphQLString),
-                resolve: (event: StoreEvent): string =>
-                  JSON.stringify(event.data),
-              },
-              type: {
-                type: new GraphQLNonNull(
-                  new GraphQLEnumType({
-                    name: 'EventType',
-                    values: {
-                      CREATED: { value: 'CREATED' },
-                      UPDATED: { value: 'UPDATED' },
-                      DELETED: { value: 'DELETED' },
-                    },
-                  }),
-                ),
-              },
-              date: { type: new GraphQLNonNull(GraphQLString) },
-            },
-          }),
-        ),
-      );
-    }
-    return this.eventType;
-  }
-}
+import { ModelSchema, Entity, EntityField } from './model.schema';
 
 @Injectable()
 export class ModelService {
   constructor(private readonly resolverService: ResolverService) {}
 
   parseModelSchema(string: string): ModelSchema {
-    const schema = buildSchema(string);
+    const schema = buildSchema(`scalar DateTime\n${string}`);
     const document = parse(string);
 
     const entities: Entity[] = [];
