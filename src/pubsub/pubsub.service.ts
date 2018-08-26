@@ -1,5 +1,5 @@
 import * as nsq from 'nsq.js';
-import { StoreEvent } from 'store/base.store';
+import { StoreEvent } from 'store/store-event.model';
 
 interface PubSubMessage {
   event: StoreEvent;
