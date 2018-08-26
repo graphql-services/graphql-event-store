@@ -63,8 +63,8 @@ export class EntityField {
       return this.isNonNull() ? new GraphQLNonNull(GraphQLID) : GraphQLID;
     } else if (this.isReferenceList()) {
       const type = GraphQLID;
-      return new GraphQLNonNull(
-        new GraphQLList(this.isNonNull() ? new GraphQLNonNull(type) : type),
+      return new GraphQLList(
+        this.isNonNull() ? new GraphQLNonNull(type) : type,
       );
     }
     return assertInputType(this.config.type);
