@@ -1,3 +1,7 @@
+import { ConnectionOptions } from 'typeorm';
+import { ENV } from 'env';
+import { parse } from 'url';
+
 /**
  * Common driver utility functions.
  */
@@ -9,6 +13,32 @@ export class DriverUtils {
    * Normalizes and builds a new driver options.
    * Extracts settings from connection url and sets to a new options object.
    */
+
+  static getConnectionOptions(): ConnectionOptions {
+    const db_url = ENV.DATABASE_URL || 'sqlite://:memory:';
+    const dbUrl = parse(db_url);
+
+    if (dbUrl.protocol === 'sqlite:') {
+      return {
+        type: 'sqlite',
+        database: dbUrl.host,
+      };
+    } else {
+      const type = (dbUrl.protocol || '').replace(':', '') as any;
+      const allowedTypes = ['mysql', 'mssql', 'mariadb', 'postgres', 'mongodb'];
+      if (allowedTypes.indexOf(type) !== -1) {
+        return {
+          type,
+          url: db_url,
+        };
+      } else {
+        throw new Error(
+          `${type} is not one of allowed types (${allowedTypes})`,
+        );
+      }
+    }
+  }
+
   static buildDriverOptions(
     options: any,
     buildOptions?: { useSid: boolean },

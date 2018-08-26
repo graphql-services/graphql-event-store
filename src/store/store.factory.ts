@@ -4,6 +4,7 @@ import { MemoryStore } from 'store/memory/memory.store';
 import { DatabaseStore } from './typeorm/database.store';
 import { parse } from 'url';
 import { ENV } from 'env';
+import { DriverUtils } from './driver.utils';
 
 export { Store } from 'store/base.store';
 
@@ -18,31 +19,6 @@ export class StoreFactory {
       return new MemoryStore();
     }
 
-    if (dbUrl.protocol === 'sqlite:') {
-      return new DatabaseStore({
-        type: 'sqlite',
-        database: dbUrl.host,
-      });
-    } else {
-      const type = (dbUrl.protocol || '').replace(':', '') as any;
-      const allowedTypes = [
-        '',
-        'mysql',
-        'mssql',
-        'mariadb',
-        'postgres',
-        'mongodb',
-      ];
-      if (allowedTypes.indexOf(type) !== -1) {
-        return new DatabaseStore({
-          type,
-          url: db_url,
-        });
-      } else {
-        throw new Error(
-          `${type} is not one of allowed types (${allowedTypes})`,
-        );
-      }
-    }
+    return new DatabaseStore(DriverUtils.getConnectionOptions());
   }
 }
