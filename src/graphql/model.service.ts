@@ -15,6 +15,7 @@ import {
 } from 'graphql';
 import { ResolverService } from './resolver.service';
 import { ModelSchema, Entity, EntityField } from './model.schema';
+import { camelCase } from 'voca';
 
 @Injectable()
 export class ModelService {
@@ -92,7 +93,7 @@ export class ModelService {
     const mutationFields: GraphQLFieldConfigMap<any, any> = {};
 
     for (const entity of modelSchema.entities) {
-      queryFields[entity.name.toLocaleLowerCase()] = this.readForEntity(entity);
+      queryFields[camelCase(entity.name)] = this.readForEntity(entity);
       mutationFields[`create${entity.name}`] = this.createForEntity(entity);
       mutationFields[`update${entity.name}`] = this.updateForEntity(entity);
       mutationFields[`delete${entity.name}`] = this.deleteForEntity(entity);
