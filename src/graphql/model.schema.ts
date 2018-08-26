@@ -109,7 +109,7 @@ export class Entity {
   getObjectType(): GraphQLObjectType {
     if (!this._objectType) {
       this._objectType = new GraphQLObjectType({
-        name: this.name,
+        name: `${this.name}RawType`,
         interfaces: [entityInterface],
         fields: this.outputFieldMap(),
       });
@@ -147,7 +147,7 @@ export class ModelSchema {
       this.eventType = new GraphQLNonNull(
         new GraphQLList(
           new GraphQLObjectType({
-            name: 'Event',
+            name: 'EventStoreEvent',
             fields: {
               id: { type: new GraphQLNonNull(GraphQLID) },
               entityId: { type: new GraphQLNonNull(GraphQLID) },
@@ -160,7 +160,7 @@ export class ModelSchema {
               type: {
                 type: new GraphQLNonNull(
                   new GraphQLEnumType({
-                    name: 'EventType',
+                    name: 'EventStoreEventType',
                     values: {
                       CREATED: { value: 'CREATED' },
                       UPDATED: { value: 'UPDATED' },

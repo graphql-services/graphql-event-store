@@ -8,6 +8,7 @@ import {
 import { Event } from './model/event.entity';
 import { ENV } from 'env';
 import { StoreEvent } from '../store-event.model';
+import { DriverUtils } from '../driver.utils';
 
 export class DatabaseStore extends Store {
   private repository?: Repository<Event>;
@@ -21,7 +22,9 @@ export class DatabaseStore extends Store {
 
   async getRepository(): Promise<Repository<Event>> {
     if (!this.repository) {
-      const connection = await createConnection(this.options);
+      const connection = await createConnection(
+        DriverUtils.buildDriverOptions(this.options),
+      );
 
       if (ENV.NODE_ENV !== 'production') {
         global.console.log('Synchronizing database (NODE_ENV: !production)');

@@ -54,7 +54,7 @@ export class ModelService {
         data: {
           type: new GraphQLNonNull(
             new GraphQLInputObjectType({
-              name: `${entity.name}CreateInput`,
+              name: `${entity.name}RawCreateInput`,
               fields: entity.inputFieldMap(),
             }),
           ),
@@ -71,7 +71,7 @@ export class ModelService {
         data: {
           type: new GraphQLNonNull(
             new GraphQLInputObjectType({
-              name: `${entity.name}UpdateInput`,
+              name: `${entity.name}RawUpdateInput`,
               fields: entity.inputFieldMap(true),
             }),
           ),
