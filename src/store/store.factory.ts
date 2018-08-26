@@ -25,8 +25,15 @@ export class StoreFactory {
       });
     } else {
       const type = (dbUrl.protocol || '').replace(':', '') as any;
-      const allowedTypes = ['mysql', 'mssql', 'mariadb', 'postgres', 'mongodb'];
-      if (type in allowedTypes) {
+      const allowedTypes = [
+        '',
+        'mysql',
+        'mssql',
+        'mariadb',
+        'postgres',
+        'mongodb',
+      ];
+      if (allowedTypes.indexOf(type) !== -1) {
         return new DatabaseStore({
           type,
           url: db_url,
