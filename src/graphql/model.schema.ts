@@ -15,8 +15,10 @@ import {
   GraphQLInterfaceType,
   GraphQLEnumType,
   GraphQLEnumValueConfigMap,
+  getNamedType,
 } from 'graphql';
 import { StoreEvent } from 'store/store-event.model';
+import { GraphQLDateTime } from 'graphql-iso-date';
 
 const entityInterface = new GraphQLInterfaceType({
   name: 'Entity',
@@ -24,8 +26,8 @@ const entityInterface = new GraphQLInterfaceType({
     id: {
       type: new GraphQLNonNull(GraphQLID),
     },
-    createdAt: { type: new GraphQLNonNull(GraphQLString) },
-    updatedAt: { type: GraphQLString },
+    createdAt: { type: new GraphQLNonNull(GraphQLDateTime) },
+    updatedAt: { type: GraphQLDateTime },
   },
 });
 
@@ -55,6 +57,12 @@ export class EntityField {
         new GraphQLList(this.isNonNull() ? new GraphQLNonNull(type) : type),
       );
     }
+
+    const namedType = getNamedType(this.config.type);
+    if (namedType.name === 'DateTime') {
+      return GraphQLDateTime;
+    }
+
     return assertOutputType(this.config.type);
   }
 
@@ -67,6 +75,12 @@ export class EntityField {
         this.isNonNull() ? new GraphQLNonNull(type) : type,
       );
     }
+
+    const namedType = getNamedType(this.config.type);
+    if (namedType.name === 'DateTime') {
+      return GraphQLDateTime;
+    }
+
     return assertInputType(this.config.type);
   }
 }
@@ -90,8 +104,8 @@ export class Entity {
       fields[field.name] = { type: field.outputType };
     }
     fields.id = { type: new GraphQLNonNull(GraphQLID) };
-    fields.createdAt = { type: new GraphQLNonNull(GraphQLString) };
-    fields.updatedAt = { type: GraphQLString };
+    fields.createdAt = { type: new GraphQLNonNull(GraphQLDateTime) };
+    fields.updatedAt = { type: GraphQLDateTime };
     return fields;
   }
 
