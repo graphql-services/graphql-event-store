@@ -20,6 +20,10 @@ export class DatabaseStore extends Store {
     });
   }
 
+  async initialize() {
+    await this.getRepository();
+  }
+
   async getRepository(): Promise<Repository<Event>> {
     if (!this.repository) {
       const connection = await createConnection(

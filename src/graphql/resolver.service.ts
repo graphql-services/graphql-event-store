@@ -36,10 +36,10 @@ export class ResolverService {
     };
   }
   createResolver(resource: string): GraphQLFieldResolver<any, any, any> {
-    return async (parent: any, args: { data: any }) => {
+    return async (parent: any, args: { input: any }) => {
       const event = await this.store.createEntity({
         entity: resource,
-        data: args.data,
+        data: args.input,
       });
 
       if (this.pubsub) {
@@ -55,11 +55,11 @@ export class ResolverService {
     };
   }
   updateResolver(resource: string): GraphQLFieldResolver<any, any, any> {
-    return async (parent: any, args: { data: any; id: string }) => {
+    return async (parent: any, args: { input: any; id: string }) => {
       const event = await this.store.updateEntity({
         entity: resource,
         entityId: args.id,
-        data: args.data,
+        data: args.input,
       });
 
       if (event && this.pubsub) {

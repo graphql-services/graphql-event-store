@@ -8,6 +8,8 @@ import {
 } from './store-event.model';
 
 export class Store {
+  async initialize() {}
+
   async getEvents(props: {
     entity?: string;
     entityId?: string;

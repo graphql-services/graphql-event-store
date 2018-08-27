@@ -10,7 +10,7 @@ import expressPlayground from 'graphql-playground-middleware-express';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ModelService } from 'graphql/model.service';
 import { ResolverService } from 'graphql/resolver.service';
-import { StoreFactory } from 'store/store.factory';
+import { StoreFactoryProvider } from 'store/store.factory';
 import { PubSubFactory } from 'pubsub/pubsub.factory';
 
 @Module({
@@ -19,7 +19,7 @@ import { PubSubFactory } from 'pubsub/pubsub.factory';
     AppService,
     ModelService,
     ResolverService,
-    StoreFactory,
+    StoreFactoryProvider,
     PubSubFactory,
   ],
 })

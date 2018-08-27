@@ -51,7 +51,7 @@ export class ModelService {
     return {
       type: new GraphQLNonNull(entity.getObjectType()),
       args: {
-        data: {
+        input: {
           type: new GraphQLNonNull(
             new GraphQLInputObjectType({
               name: `${entity.name}RawCreateInput`,
@@ -68,7 +68,7 @@ export class ModelService {
       type: entity.getObjectType(),
       args: {
         id: { type: new GraphQLNonNull(GraphQLID) },
-        data: {
+        input: {
           type: new GraphQLNonNull(
             new GraphQLInputObjectType({
               name: `${entity.name}RawUpdateInput`,
