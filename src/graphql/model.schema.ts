@@ -34,10 +34,10 @@ const entityInterface = new GraphQLInterfaceType({
 export class EntityField {
   constructor(private readonly config: { name: string; type: GraphQLType }) {}
 
-  private isReference(): boolean {
+  isReference(): boolean {
     return getNullableType(this.config.type) instanceof GraphQLObjectType;
   }
-  private isReferenceList(): boolean {
+  isReferenceList(): boolean {
     return getNullableType(this.config.type) instanceof GraphQLList;
   }
   private isNonNull(): boolean {
@@ -101,7 +101,15 @@ export class Entity {
   outputFieldMap(): GraphQLFieldConfigMap<any, any> {
     const fields: GraphQLFieldConfigMap<any, any> = {};
     for (const field of this.fields) {
-      fields[field.name] = { type: field.outputType };
+      let fieldName = field.name;
+
+      if (field.isReference()) {
+        fieldName += '_id';
+      } else if (field.isReferenceList()) {
+        fieldName += '_ids';
+      }
+
+      fields[fieldName] = { type: field.outputType };
     }
     fields.id = { type: new GraphQLNonNull(GraphQLID) };
     fields.createdAt = { type: new GraphQLNonNull(GraphQLDateTime) };
