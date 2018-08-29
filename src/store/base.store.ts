@@ -107,7 +107,7 @@ export class Store {
         type: StoreEventType.UPDATED,
         date: new Date(),
       };
-      this.saveEvent(event);
+      await this.saveEvent(event);
       return event;
     }
     return null;

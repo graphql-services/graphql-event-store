@@ -42,16 +42,18 @@ export class ResolverService {
         data: args.input,
       });
 
-      if (this.pubsub) {
-        await this.pubsub.publish({
-          event,
-        });
-      }
-
-      return this.store.getEntityData({
+      const data = await this.store.getEntityData({
         entity: resource,
         entityId: event.entityId,
       });
+
+      if (this.pubsub) {
+        await this.pubsub.publish({
+          event: { ...event, data },
+        });
+      }
+
+      return data;
     };
   }
   updateResolver(resource: string): GraphQLFieldResolver<any, any, any> {
@@ -62,16 +64,18 @@ export class ResolverService {
         data: args.input,
       });
 
-      if (event && this.pubsub) {
-        await this.pubsub.publish({
-          event,
-        });
-      }
-
-      return this.store.getEntityData({
+      const data = await this.store.getEntityData({
         entity: resource,
         entityId: args.id,
       });
+
+      if (event && this.pubsub) {
+        await this.pubsub.publish({
+          event: { ...event, data },
+        });
+      }
+
+      return data;
     };
   }
   deleteResolver(resource: string): GraphQLFieldResolver<any, any, any> {
