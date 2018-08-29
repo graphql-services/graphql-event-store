@@ -120,7 +120,15 @@ export class Entity {
   inputFieldMap(optionals: boolean = false): GraphQLInputFieldConfigMap {
     const fields: GraphQLInputFieldConfigMap = {};
     for (const field of this.fields) {
-      fields[field.name] = {
+      let fieldName = field.name;
+
+      if (field.isReference()) {
+        fieldName += '_id';
+      } else if (field.isReferenceList()) {
+        fieldName += '_ids';
+      }
+
+      fields[fieldName] = {
         type: optionals ? getNullableType(field.inputType) : field.inputType,
       };
     }
