@@ -9,7 +9,6 @@ import {
   buildSchema,
   GraphQLFieldConfig,
   GraphQLID,
-  GraphQLBoolean,
   GraphQLInputObjectType,
   GraphQLNonNull,
 } from 'graphql';

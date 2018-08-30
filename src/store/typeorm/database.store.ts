@@ -63,6 +63,7 @@ export class DatabaseStore extends Store {
     _event.id = event.id;
     _event.entity = event.entity;
     _event.entityId = event.entityId;
+    _event.operationName = event.operationName;
     _event.data = event.data;
     _event.type = event.type;
     _event.date = event.date;

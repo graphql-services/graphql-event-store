@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn } from 'typeorm';
-import { StoreEventType, StoreEventData } from '../../base.store';
+import { StoreEventData, StoreEventType } from '../../store-event.model';
+// import { StoreEventType, StoreEventData } from '../../base.store';
 
 @Entity()
 export class Event {
@@ -26,6 +27,7 @@ export class Event {
     //   },
     // },
     type: 'text',
+    nullable: true,
   })
   rawData: string;
 
@@ -35,6 +37,9 @@ export class Event {
   set data(value: StoreEventData | null) {
     this.rawData = JSON.stringify(value);
   }
+
+  @Column({ nullable: true })
+  operationName?: string;
 
   @Column()
   rawType: string;

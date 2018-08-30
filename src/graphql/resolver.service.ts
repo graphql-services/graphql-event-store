@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { GraphQLFieldResolver } from 'graphql';
+import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql';
 import { Store, StoreFactory } from '../store/store.factory';
 import { PubSubFactory } from 'pubsub/pubsub.factory';
 import { PubSubService } from 'pubsub/pubsub.service';
@@ -28,7 +28,12 @@ export class ResolverService {
   }
 
   readResolver(resource: string): GraphQLFieldResolver<any, any, any> {
-    return async (parent: any, args: { id: string }) => {
+    return async (
+      parent: any,
+      args: { id: string },
+      ctx: any,
+      info: GraphQLResolveInfo,
+    ) => {
       return await this.store.getEntityData({
         entity: resource,
         entityId: args.id,
@@ -36,10 +41,16 @@ export class ResolverService {
     };
   }
   createResolver(resource: string): GraphQLFieldResolver<any, any, any> {
-    return async (parent: any, args: { input: any }) => {
+    return async (
+      parent: any,
+      args: { input: any },
+      ctx: any,
+      info: GraphQLResolveInfo,
+    ) => {
       const event = await this.store.createEntity({
         entity: resource,
         data: args.input,
+        operationName: info.operation.name && info.operation.name.value,
       });
 
       const data = await this.store.getEntityData({
@@ -57,7 +68,12 @@ export class ResolverService {
     };
   }
   updateResolver(resource: string): GraphQLFieldResolver<any, any, any> {
-    return async (parent: any, args: { input: any; id: string }) => {
+    return async (
+      parent: any,
+      args: { input: any; id: string },
+      ctx: any,
+      info: GraphQLResolveInfo,
+    ) => {
       const data = await this.store.getEntityData({
         entity: resource,
         entityId: args.id,
@@ -71,6 +87,7 @@ export class ResolverService {
         entity: resource,
         entityId: args.id,
         data: args.input,
+        operationName: info.operation.name && info.operation.name.value,
       });
 
       if (event && this.pubsub) {
@@ -87,7 +104,12 @@ export class ResolverService {
     };
   }
   deleteResolver(resource: string): GraphQLFieldResolver<any, any, any> {
-    return async (parent: any, args: { id: string }) => {
+    return async (
+      parent: any,
+      args: { id: string },
+      ctx: any,
+      info: GraphQLResolveInfo,
+    ) => {
       const data = await this.store.getEntityData({
         entity: resource,
         entityId: args.id,
@@ -100,6 +122,7 @@ export class ResolverService {
       const event = await this.store.deleteEntity({
         entity: resource,
         entityId: args.id,
+        operationName: info.operation.name && info.operation.name.value,
       });
 
       if (event && this.pubsub) {

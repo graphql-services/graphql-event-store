@@ -183,6 +183,7 @@ export class ModelSchema {
               id: { type: new GraphQLNonNull(GraphQLID) },
               entityId: { type: new GraphQLNonNull(GraphQLID) },
               entity: { type: new GraphQLNonNull(this.getEntitiesEnumType()) },
+              operationName: { type: GraphQLString },
               data: {
                 type: new GraphQLNonNull(GraphQLString),
                 resolve: (event: StoreEvent): string =>

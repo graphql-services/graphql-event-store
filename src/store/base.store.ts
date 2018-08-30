@@ -71,12 +71,14 @@ export class Store {
   async createEntity(props: {
     entity: string;
     data: StoreEventData;
+    operationName?: string;
   }): Promise<StoreEvent> {
     const entityId = v4();
     const event: StoreEvent = {
       entityId,
       id: v4(),
       entity: props.entity,
+      operationName: props.operationName,
       data: diff(null, props.data),
       type: StoreEventType.CREATED,
       date: new Date(),
@@ -91,6 +93,7 @@ export class Store {
     entity: string;
     entityId: string;
     data: StoreEventData;
+    operationName?: string;
   }): Promise<StoreEvent | null> {
     const events = await this.getEvents(props);
     if (events.length === 0) {
@@ -107,6 +110,7 @@ export class Store {
         id: v4(),
         entityId: props.entityId,
         entity: props.entity,
+        operationName: props.operationName,
         data: changes,
         type: StoreEventType.UPDATED,
         date: new Date(),
@@ -120,11 +124,13 @@ export class Store {
   async deleteEntity(props: {
     entity: string;
     entityId: string;
+    operationName?: string;
   }): Promise<StoreEvent> {
     const event: StoreEvent = {
       id: v4(),
       entityId: props.entityId,
       entity: props.entity,
+      operationName: props.operationName,
       data: null,
       type: StoreEventType.DELETED,
       date: new Date(),

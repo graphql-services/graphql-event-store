@@ -18,6 +18,7 @@ export interface StoreEvent {
   id: string;
   entity: string;
   entityId: string;
+  operationName?: string;
   data: StoreEventData | null;
   type: StoreEventType;
   date: Date;
