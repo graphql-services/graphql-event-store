@@ -93,6 +93,10 @@ export class Store {
     data: StoreEventData;
   }): Promise<StoreEvent | null> {
     const events = await this.getEvents(props);
+    if (events.length === 0) {
+      return null;
+    }
+
     const currentData = await this.mergeEvents(events);
 
     const newData = Object.assign({}, currentData, props.data);
