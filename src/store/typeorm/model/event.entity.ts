@@ -25,7 +25,7 @@ export class Event {
     //     return JSON.parse(value);
     //   },
     // },
-    // type: 'text',
+    type: 'text',
   })
   rawData: string;
 
