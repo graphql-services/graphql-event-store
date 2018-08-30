@@ -58,15 +58,19 @@ export class ResolverService {
   }
   updateResolver(resource: string): GraphQLFieldResolver<any, any, any> {
     return async (parent: any, args: { input: any; id: string }) => {
+      const data = await this.store.getEntityData({
+        entity: resource,
+        entityId: args.id,
+      });
+
+      if (data.deletedAt) {
+        throw new Error(`Cannot update deleted entity`);
+      }
+
       const event = await this.store.updateEntity({
         entity: resource,
         entityId: args.id,
         data: args.input,
-      });
-
-      const data = await this.store.getEntityData({
-        entity: resource,
-        entityId: args.id,
       });
 
       if (event && this.pubsub) {
@@ -75,26 +79,36 @@ export class ResolverService {
         });
       }
 
-      return data;
+      // this is double fetching of data - could be handled by applying diff
+      return this.store.getEntityData({
+        entity: resource,
+        entityId: args.id,
+      });
     };
   }
   deleteResolver(resource: string): GraphQLFieldResolver<any, any, any> {
     return async (parent: any, args: { id: string }) => {
+      const data = await this.store.getEntityData({
+        entity: resource,
+        entityId: args.id,
+      });
+
+      if (data.deletedAt) {
+        throw new Error(`Cannot delete already deleted entity`);
+      }
+
       const event = await this.store.deleteEntity({
         entity: resource,
         entityId: args.id,
       });
 
-      if (this.pubsub) {
+      if (event && this.pubsub) {
         await this.pubsub.publish({
           event,
         });
       }
 
-      return this.store.getEntityData({
-        entity: resource,
-        entityId: args.id,
-      });
+      return data;
     };
   }
 }

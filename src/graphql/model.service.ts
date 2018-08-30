@@ -82,7 +82,7 @@ export class ModelService {
   }
   deleteForEntity(entity: Entity): GraphQLFieldConfig<any, any> {
     return {
-      type: GraphQLBoolean,
+      type: entity.getObjectType(),
       args: { id: { type: new GraphQLNonNull(GraphQLID) } },
       resolve: this.resolverService.deleteResolver(entity.name),
     };

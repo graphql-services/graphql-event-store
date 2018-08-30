@@ -114,6 +114,7 @@ export class Entity {
     fields.id = { type: new GraphQLNonNull(GraphQLID) };
     fields.createdAt = { type: new GraphQLNonNull(GraphQLDateTime) };
     fields.updatedAt = { type: GraphQLDateTime };
+    fields.deletedAt = { type: GraphQLDateTime };
     return fields;
   }
 
