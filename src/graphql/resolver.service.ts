@@ -63,7 +63,7 @@ export class ResolverService {
         entityId: args.id,
       });
 
-      if (data.deletedAt) {
+      if (data && data.deletedAt) {
         throw new Error(`Cannot update deleted entity`);
       }
 
@@ -93,7 +93,7 @@ export class ResolverService {
         entityId: args.id,
       });
 
-      if (data.deletedAt) {
+      if (data && data.deletedAt) {
         throw new Error(`Cannot delete already deleted entity`);
       }
 
