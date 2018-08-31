@@ -52,6 +52,7 @@ export class DatabaseStore extends Store {
 
     const events = await repo.find({
       where,
+      order: { date: 'ASC' },
     });
     return events;
   }
