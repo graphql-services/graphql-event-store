@@ -92,7 +92,7 @@ export class ModelService {
     const mutationFields: GraphQLFieldConfigMap<any, any> = {};
 
     for (const entity of modelSchema.entities) {
-      queryFields[camelCase(entity.name)] = this.readForEntity(entity);
+      // queryFields[camelCase(entity.name)] = this.readForEntity(entity);
       mutationFields[`create${entity.name}`] = this.createForEntity(entity);
       mutationFields[`update${entity.name}`] = this.updateForEntity(entity);
       mutationFields[`delete${entity.name}`] = this.deleteForEntity(entity);
