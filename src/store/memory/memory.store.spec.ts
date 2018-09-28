@@ -95,7 +95,7 @@ describe('MemoryStore', () => {
 
     await store.updateEntity({
       entity: 'User',
-      entityId: result.id,
+      entityId: result.entityId,
       data: {
         items: [
           { id: 124, amount: 2 },
@@ -107,10 +107,10 @@ describe('MemoryStore', () => {
 
     const result2 = await store.getEntityData({
       entity: 'User',
-      entityId: result.id,
+      entityId: result.entityId,
     });
 
-    expect(result.id).toBe(result2.id);
+    expect(result.entityId).toBe(result2.id);
     expect(result2.updatedAt).not.toBe(null);
     expect(result2.deletedAt).toBe(null);
     expect(result2.blah).toBe('foo');

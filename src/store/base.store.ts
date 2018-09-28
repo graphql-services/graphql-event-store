@@ -7,6 +7,7 @@ import {
   StoreEventType,
 } from './store-event.model';
 
+const createDiff = diff.default || diff;
 export class Store {
   async initialize() {}
 
@@ -79,7 +80,7 @@ export class Store {
       id: v4(),
       entity: props.entity,
       operationName: props.operationName,
-      data: diff(null, props.data),
+      data: createDiff(null, props.data),
       type: StoreEventType.CREATED,
       date: new Date(),
     };
@@ -103,7 +104,7 @@ export class Store {
     const currentData = await this.mergeEvents(events);
 
     const newData = Object.assign({}, currentData, props.data);
-    const changes = diff(currentData, newData);
+    const changes = createDiff(currentData, newData);
 
     if (changes.length > 0) {
       const event: StoreEvent = {
