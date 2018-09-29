@@ -4,4 +4,10 @@ node_js:
   - 8.4.0
   - 8.9.0
   - 9.0.0
+addons:
+  postgresql: '9.3'
+before_script:
+  - npm install -g codecov
 script: npm test
+after_success:
+  - codecov
