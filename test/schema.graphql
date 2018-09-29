@@ -1,0 +1,19 @@
+type User {
+  username: String!
+  password: String
+}
+
+enum RoleType {
+  ADMIN
+  USER
+}
+
+type Role {
+  name: String
+  type: RoleType
+}
+
+type Company {
+  name: String!
+  employees: [User!]!
+}
