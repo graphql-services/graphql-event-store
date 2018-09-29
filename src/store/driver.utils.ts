@@ -1,6 +1,7 @@
 import { ConnectionOptions } from 'typeorm';
-import { ENV } from 'env';
 import { parse } from 'url';
+
+import { ENV } from '../env';
 
 /**
  * Common driver utility functions.

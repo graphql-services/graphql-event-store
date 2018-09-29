@@ -17,7 +17,7 @@ import {
   GraphQLEnumValueConfigMap,
   getNamedType,
 } from 'graphql';
-import { StoreEvent } from 'store/store-event.model';
+import { StoreEvent } from '../store/store-event.model';
 import { GraphQLDateTime } from 'graphql-iso-date';
 
 const entityInterface = new GraphQLInterfaceType({

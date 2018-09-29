@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql';
 import { Store, StoreFactory } from '../store/store.factory';
-import { PubSubFactory } from 'pubsub/pubsub.factory';
-import { PubSubService } from 'pubsub/pubsub.service';
+import { PubSubFactory } from '../pubsub/pubsub.factory';
+import { PubSubService } from '../pubsub/pubsub.service';
 
 @Injectable()
 export class ResolverService {
@@ -131,7 +131,10 @@ export class ResolverService {
         });
       }
 
-      return data;
+      return this.store.getEntityData({
+        entity: resource,
+        entityId: args.id,
+      });
     };
   }
 }

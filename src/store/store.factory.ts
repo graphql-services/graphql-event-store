@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { Store } from 'store/base.store';
-import { MemoryStore } from 'store/memory/memory.store';
-import { DatabaseStore } from './typeorm/database.store';
 import { parse } from 'url';
-import { ENV } from 'env';
-import { DriverUtils } from './driver.utils';
+import { Injectable } from '@nestjs/common';
 
-export { Store } from 'store/base.store';
+import { Store } from '../store/base.store';
+import { MemoryStore } from '../store/memory/memory.store';
+import { DatabaseStore } from './typeorm/database.store';
+import { ENV } from '../env';
+import { DriverUtils } from './driver.utils';
+export { Store } from '../store/base.store';
 
 @Injectable()
 export class StoreFactory {

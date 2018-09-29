@@ -2,7 +2,7 @@ import { readFileSync } from 'fs';
 import { Injectable, Module } from '@nestjs/common';
 import { GraphQLSchema } from 'graphql';
 import { sync as globSync } from 'glob';
-import { ModelService } from 'graphql/model.service';
+import { ModelService } from './graphql/model.service';
 
 @Injectable()
 @Module({

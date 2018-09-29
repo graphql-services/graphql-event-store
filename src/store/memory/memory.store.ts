@@ -1,4 +1,5 @@
-import { Store, StoreEvent } from '../base.store';
+import { Store } from '../base.store';
+import { StoreEvent } from '../store-event.model';
 
 export class MemoryStore extends Store {
   private events: StoreEvent[] = [];

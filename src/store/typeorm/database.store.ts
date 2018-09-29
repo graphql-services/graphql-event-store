@@ -6,7 +6,7 @@ import {
   ConnectionOptions,
 } from 'typeorm';
 import { Event } from './model/event.entity';
-import { ENV } from 'env';
+import { ENV } from '../../env';
 import { StoreEvent } from '../store-event.model';
 import { DriverUtils } from '../driver.utils';
 
