@@ -8,7 +8,7 @@ describe('EventSource', () => {
   let app: INestApplication;
   let test: SuperTest<any>;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -151,6 +151,75 @@ describe('EventSource', () => {
             expect(data2.updatedAt).toBeNull();
             expect(data2.createdAt).not.toBeNull();
             expect(data2.deletedAt).not.toBeNull();
+          });
+      });
+  });
+
+  it('fetch events', () => {
+    return test
+      .post('/graphql')
+      .send({
+        query: `
+        mutation {
+          user1:createUser(input: {
+            username: "john.doe",
+            password: "xxx"
+          }) {
+            id
+            username
+            password
+          }
+          user2:createUser(input: {
+            username: "jane.siri",
+            password: "nothingspecial"
+          }) {
+            id
+            username
+            password
+          }
+        }
+        `,
+      })
+      .expect(200)
+      .then(() => {
+        return test
+          .post('/graphql')
+          .send({
+            query: `
+            query {
+              _events {
+                id
+                entity
+                entityId
+                type
+                cursor
+              }
+            }
+            `,
+          })
+          .expect(200)
+          .expect(res => {
+            const data = res.body.data._events;
+            expect(data.length).toBe(2);
+          })
+          .then(res => {
+            const data = res.body.data._events;
+            return test
+              .post('/graphql')
+              .send({
+                query: `
+                query {
+                  _events(cursor:"${data[0].cursor}",limit:1) {
+                    id
+                  }
+                }
+                `,
+              })
+              .expect(200)
+              .expect(res2 => {
+                const data2 = res2.body.data._events;
+                expect(data2.length).toBe(1);
+              });
           });
       });
   });

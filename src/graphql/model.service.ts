@@ -9,6 +9,8 @@ import {
   buildSchema,
   GraphQLFieldConfig,
   GraphQLID,
+  GraphQLString,
+  GraphQLInt,
   GraphQLInputObjectType,
   GraphQLNonNull,
 } from 'graphql';
@@ -103,6 +105,11 @@ export class ModelService {
       args: {
         id: { type: GraphQLID },
         entity: { type: modelSchema.getEntitiesEnumType() },
+        cursor: {
+          type: GraphQLString,
+          description: 'Fetch items after this cursor',
+        },
+        limit: { type: GraphQLInt },
       },
       resolve: this.resolverService.eventsResolver(),
     };

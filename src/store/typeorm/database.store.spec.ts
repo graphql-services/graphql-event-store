@@ -1,9 +1,20 @@
-import { MemoryStore } from './memory.store';
+import { DatabaseStore } from './database.store';
 
-describe('MemoryStore', () => {
+describe('DatabaseStore', () => {
+  let store: DatabaseStore;
+
+  beforeEach(async () => {
+    store = new DatabaseStore({
+      type: 'sqlite',
+      database: ':memory:',
+    });
+  });
+
+  afterEach(async () => {
+    return store.close();
+  });
+
   it('should create entity', async () => {
-    const store = new MemoryStore();
-
     const event = await store.createEntity({
       entity: 'User',
       data: { blah: 'foo' },
@@ -23,9 +34,8 @@ describe('MemoryStore', () => {
     const events = await store.getEvents({ entity: 'User' });
     expect(events.length).toBe(1);
   });
-  it('should update entity', async () => {
-    const store = new MemoryStore();
 
+  it('should update entity', async () => {
     const event = await store.createEntity({
       entity: 'User',
       data: { blah: 'foo' },
@@ -55,9 +65,8 @@ describe('MemoryStore', () => {
     const events = await store.getEvents({ entity: 'User' });
     expect(events.length).toBe(2);
   });
-  it('should delete entity', async () => {
-    const store = new MemoryStore();
 
+  it('should delete entity', async () => {
     const event = await store.createEntity({
       entity: 'User',
       data: { blah: 'foo' },
@@ -85,9 +94,8 @@ describe('MemoryStore', () => {
     const events = await store.getEvents({ entity: 'User' });
     expect(events.length).toBe(2);
   });
-  it('should fetch created entity', async () => {
-    const store = new MemoryStore();
 
+  it('should fetch created entity', async () => {
     const result = await store.createEntity({
       entity: 'User',
       data: {
@@ -128,8 +136,6 @@ describe('MemoryStore', () => {
   });
 
   it('should fetch events', async () => {
-    const store = new MemoryStore();
-
     const event = await store.createEntity({
       entity: 'User',
       data: { blah: 'foo' },

@@ -14,18 +14,6 @@ export class Event {
   entityId: string;
 
   @Column({
-    // transformer: {
-    //   from(value: StoreEventData | null): string | null {
-    //     global.console.log('from', value);
-    //     if (value === null) return null;
-    //     return JSON.stringify(value);
-    //   },
-    //   to(value: string | null): StoreEventData | null {
-    //     global.console.log('to', value);
-    //     if (value === null) return null;
-    //     return JSON.parse(value);
-    //   },
-    // },
     type: 'text',
     nullable: true,
   })
@@ -37,6 +25,9 @@ export class Event {
   set data(value: StoreEventData | null) {
     this.rawData = JSON.stringify(value);
   }
+
+  @Column()
+  cursor: string;
 
   @Column({ nullable: true })
   operationName?: string;

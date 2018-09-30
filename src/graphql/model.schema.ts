@@ -189,6 +189,9 @@ export class ModelSchema {
                 resolve: (event: StoreEvent): string =>
                   JSON.stringify(event.data),
               },
+              cursor: {
+                type: new GraphQLNonNull(GraphQLString),
+              },
               type: {
                 type: new GraphQLNonNull(
                   new GraphQLEnumType({

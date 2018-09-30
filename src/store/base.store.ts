@@ -14,9 +14,13 @@ export class Store {
   async getEvents(props: {
     entity?: string;
     entityId?: string;
+    cursor?: string;
+    limit?: number;
   }): Promise<StoreEvent[]> {
     throw new Error('not implemented');
   }
+
+  async;
 
   async saveEvent(event: StoreEvent): Promise<void> {
     throw new Error('not implemented');
@@ -75,6 +79,7 @@ export class Store {
     operationName?: string;
   }): Promise<StoreEvent> {
     const entityId = v4();
+    const entityDate = new Date();
     const event: StoreEvent = {
       entityId,
       id: v4(),
@@ -82,7 +87,8 @@ export class Store {
       operationName: props.operationName,
       data: createDiff(null, props.data),
       type: StoreEventType.CREATED,
-      date: new Date(),
+      cursor: entityDate.toISOString() + '.' + process.hrtime()[1],
+      date: entityDate,
     };
 
     await this.saveEvent(event);
@@ -107,6 +113,7 @@ export class Store {
     const changes = createDiff(currentData, newData);
 
     if (changes.length > 0) {
+      const entityDate = new Date();
       const event: StoreEvent = {
         id: v4(),
         entityId: props.entityId,
@@ -114,7 +121,8 @@ export class Store {
         operationName: props.operationName,
         data: changes,
         type: StoreEventType.UPDATED,
-        date: new Date(),
+        cursor: entityDate.toISOString() + '.' + process.hrtime()[1],
+        date: entityDate,
       };
       await this.saveEvent(event);
       return event;
@@ -127,6 +135,7 @@ export class Store {
     entityId: string;
     operationName?: string;
   }): Promise<StoreEvent> {
+    const entityDate = new Date();
     const event: StoreEvent = {
       id: v4(),
       entityId: props.entityId,
@@ -134,10 +143,11 @@ export class Store {
       operationName: props.operationName,
       data: null,
       type: StoreEventType.DELETED,
-      date: new Date(),
+      cursor: entityDate.toISOString() + '.' + process.hrtime()[1],
+      date: entityDate,
     };
 
-    this.saveEvent(event);
+    await this.saveEvent(event);
 
     return event;
   }

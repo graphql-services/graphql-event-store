@@ -102,7 +102,7 @@ export class DriverUtils {
       host,
       username,
       password,
-      port: port ? parseInt(port) : undefined,
+      port: port ? parseInt(port, 10) : undefined,
       database: afterBase || undefined,
     };
   }

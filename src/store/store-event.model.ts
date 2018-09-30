@@ -22,4 +22,5 @@ export interface StoreEvent {
   data: StoreEventData | null;
   type: StoreEventType;
   date: Date;
+  cursor: string;
 }

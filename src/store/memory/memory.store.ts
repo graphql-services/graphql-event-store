@@ -7,12 +7,23 @@ export class MemoryStore extends Store {
   async getEvents(props: {
     entity?: string;
     entityId?: string;
+    cursor?: string;
+    limit?: number;
   }): Promise<StoreEvent[]> {
-    return this.events.filter(
+    let events = this.events;
+
+    events = events.filter(
       e =>
         (!props.entity || e.entity === props.entity) &&
-        (!props.entityId || e.entityId === props.entityId),
+        (!props.entityId || e.entityId === props.entityId) &&
+        (!props.cursor || e.cursor > props.cursor),
     );
+
+    if (typeof props.limit !== 'undefined') {
+      events = events.slice(0, props.limit);
+    }
+
+    return events;
   }
 
   async saveEvent(event: StoreEvent): Promise<void> {
