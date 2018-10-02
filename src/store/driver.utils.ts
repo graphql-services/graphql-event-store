@@ -23,6 +23,7 @@ export class DriverUtils {
       return {
         type: 'sqlite',
         database: dbUrl.host,
+        logging: !!ENV.DEBUG,
       };
     } else {
       const type = (dbUrl.protocol || '').replace(':', '') as any;
@@ -31,6 +32,7 @@ export class DriverUtils {
         return {
           type,
           url: db_url,
+          logging: !!ENV.DEBUG,
         };
       } else {
         throw new Error(

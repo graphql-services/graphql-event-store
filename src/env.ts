@@ -3,6 +3,7 @@ import { config } from 'dotenv';
 config({});
 
 interface IENV {
+  DEBUG?: boolean;
   DATABASE_URL: string;
   NODE_ENV: string;
   NSQ_URL: string;
