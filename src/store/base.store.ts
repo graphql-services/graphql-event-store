@@ -20,8 +20,6 @@ export class Store {
     throw new Error('not implemented');
   }
 
-  async;
-
   async saveEvent(event: StoreEvent): Promise<void> {
     throw new Error('not implemented');
   }
@@ -31,7 +29,7 @@ export class Store {
 
     for (const event of events) {
       if (event.data) {
-        data = diff.apply(event.data, data);
+        data = diff.apply(event.data, data || {});
       }
     }
 
