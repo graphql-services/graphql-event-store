@@ -95,17 +95,19 @@ export class ResolverService {
         operationName: info.operation.name && info.operation.name.value,
       });
 
-      if (event && this.pubsub) {
-        await this.pubsub.publish({
-          event: { ...event, data },
-        });
-      }
-
       // this is double fetching of data - could be handled by applying diff
-      return this.store.getEntityData({
+      const newData = await this.store.getEntityData({
         entity: resource,
         entityId: args.id,
       });
+
+      if (event && this.pubsub) {
+        await this.pubsub.publish({
+          event: { ...event, data: newData },
+        });
+      }
+
+      return newData;
     };
   }
   deleteResolver(resource: string): GraphQLFieldResolver<any, any, any> {
