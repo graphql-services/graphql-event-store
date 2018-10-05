@@ -156,8 +156,10 @@ describe('EventSource', () => {
   });
 
   it('fetch events', () => {
+    const principalId = 'abcde';
     return test
       .post('/graphql')
+      .set('x-jwt-subject', principalId)
       .send({
         query: `
         mutation {
@@ -193,6 +195,7 @@ describe('EventSource', () => {
                 entityId
                 type
                 cursor
+                principalId
               }
             }
             `,
@@ -201,6 +204,7 @@ describe('EventSource', () => {
           .expect(res => {
             const data = res.body.data._events;
             expect(data.length).toBe(2);
+            expect(data[0].principalId).not.toBeNull();
           })
           .then(res => {
             const data = res.body.data._events;
@@ -219,6 +223,7 @@ describe('EventSource', () => {
               .expect(res2 => {
                 const data2 = res2.body.data._events;
                 expect(data2.length).toBe(1);
+                expect(data[0].principalId).not.toBeNull();
               });
           });
       });

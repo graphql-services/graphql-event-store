@@ -44,4 +44,7 @@ export class Event {
 
   @Column()
   date: Date;
+
+  @Column({ nullable: true })
+  principalId?: string;
 }

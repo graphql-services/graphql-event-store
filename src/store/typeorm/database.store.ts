@@ -81,6 +81,7 @@ export class DatabaseStore extends Store {
     _event.type = event.type;
     _event.cursor = event.cursor;
     _event.date = event.date;
+    _event.principalId = event.principalId;
 
     await repo.save(_event);
   }

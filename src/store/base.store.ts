@@ -75,6 +75,7 @@ export class Store {
     entity: string;
     data: StoreEventData;
     operationName?: string;
+    principalId?: string;
   }): Promise<StoreEvent> {
     const entityId = v4();
     const entityDate = new Date();
@@ -87,6 +88,7 @@ export class Store {
       type: StoreEventType.CREATED,
       cursor: entityDate.toISOString() + '.' + process.hrtime()[1],
       date: entityDate,
+      principalId: props.principalId,
     };
 
     await this.saveEvent(event);
@@ -99,6 +101,7 @@ export class Store {
     entityId: string;
     data: StoreEventData;
     operationName?: string;
+    principalId?: string;
   }): Promise<StoreEvent | null> {
     const events = await this.getEvents(props);
     if (events.length === 0) {
@@ -121,6 +124,7 @@ export class Store {
         type: StoreEventType.UPDATED,
         cursor: entityDate.toISOString() + '.' + process.hrtime()[1],
         date: entityDate,
+        principalId: props.principalId,
       };
       await this.saveEvent(event);
       return event;
@@ -132,6 +136,7 @@ export class Store {
     entity: string;
     entityId: string;
     operationName?: string;
+    principalId?: string;
   }): Promise<StoreEvent> {
     const entityDate = new Date();
     const event: StoreEvent = {
@@ -143,6 +148,7 @@ export class Store {
       type: StoreEventType.DELETED,
       cursor: entityDate.toISOString() + '.' + process.hrtime()[1],
       date: entityDate,
+      principalId: props.principalId,
     };
 
     await this.saveEvent(event);

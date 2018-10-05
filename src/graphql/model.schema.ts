@@ -205,6 +205,7 @@ export class ModelSchema {
                 ),
               },
               date: { type: new GraphQLNonNull(GraphQLString) },
+              principalId: { type: GraphQLID },
             },
           }),
         ),

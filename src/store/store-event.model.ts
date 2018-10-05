@@ -23,4 +23,5 @@ export interface StoreEvent {
   type: StoreEventType;
   date: Date;
   cursor: string;
+  principalId?: string;
 }

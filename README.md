@@ -13,3 +13,7 @@ Dockerfile
 FROM graphql/event-store
 COPY graphql.schema /code/graphql.schema
 ```
+
+## Principal ID
+
+You can provide header `x-jwt-subject` with ID of principal (owner of the event).

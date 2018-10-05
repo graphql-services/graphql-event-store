@@ -52,10 +52,12 @@ export class ResolverService {
       ctx: any,
       info: GraphQLResolveInfo,
     ) => {
+      const principalId = ctx.headers['x-jwt-subject'];
       const event = await this.store.createEntity({
         entity: resource,
         data: args.input,
         operationName: info.operation.name && info.operation.name.value,
+        principalId,
       });
 
       const data = await this.store.getEntityData({
@@ -79,6 +81,7 @@ export class ResolverService {
       ctx: any,
       info: GraphQLResolveInfo,
     ) => {
+      const principalId = ctx.headers['x-jwt-subject'];
       const data = await this.store.getEntityData({
         entity: resource,
         entityId: args.id,
@@ -93,6 +96,7 @@ export class ResolverService {
         entityId: args.id,
         data: args.input,
         operationName: info.operation.name && info.operation.name.value,
+        principalId,
       });
 
       // this is double fetching of data - could be handled by applying diff
@@ -117,6 +121,7 @@ export class ResolverService {
       ctx: any,
       info: GraphQLResolveInfo,
     ) => {
+      const principalId = ctx.headers['x-jwt-subject'];
       const data = await this.store.getEntityData({
         entity: resource,
         entityId: args.id,
@@ -130,6 +135,7 @@ export class ResolverService {
         entity: resource,
         entityId: args.id,
         operationName: info.operation.name && info.operation.name.value,
+        principalId,
       });
 
       if (event && this.pubsub) {
