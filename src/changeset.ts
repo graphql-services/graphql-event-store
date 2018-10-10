@@ -1,7 +1,7 @@
 // please check if this is already accepted: https://github.com/eugeneware/changeset/pull/7
 import * as _ from 'underscore';
 
-function diff(old, new_) {
+export function diff(old, new_) {
   let changes = [];
 
   changes = changes.concat(compare([], old, new_));
@@ -9,7 +9,6 @@ function diff(old, new_) {
   comparing = [];
   return changes;
 }
-export default diff;
 
 function delCheck(op) {
   if (op.type === 'put' && op.value === undefined) {
@@ -56,8 +55,7 @@ function compare(path, old, new_) {
   return changes;
 }
 
-module.exports.apply = apply;
-function apply(changes, target, modify) {
+export function apply(changes, target, modify = false) {
   let obj, clone;
   if (modify) {
     obj = target;

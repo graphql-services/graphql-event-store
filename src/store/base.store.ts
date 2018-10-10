@@ -1,4 +1,4 @@
-import * as diff from '../changeset';
+import { diff, apply } from '../changeset';
 import { v4 } from 'uuid';
 import {
   StoreEvent,
@@ -7,7 +7,7 @@ import {
   StoreEventType,
 } from './store-event.model';
 
-const createDiff = diff.default || diff;
+const createDiff = diff;
 export class Store {
   async initialize() {}
 
@@ -29,7 +29,7 @@ export class Store {
 
     for (const event of events) {
       if (event.data) {
-        data = diff.apply(event.data, data || {});
+        data = apply(event.data, data || {});
       }
     }
 
