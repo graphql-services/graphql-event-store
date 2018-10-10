@@ -8,6 +8,7 @@ interface IENV {
   NODE_ENV: string;
   NSQ_URL: string;
   PORT: number | string;
+  SENTRY_DNS?: string;
 }
 
 export const ENV: IENV = process.env as any;

@@ -28,13 +28,13 @@ describe('MemoryStore', () => {
 
     const event = await store.createEntity({
       entity: 'User',
-      data: { blah: 'foo' },
+      data: { blah: 'foo', roles: ['aaa', 'bbb'] },
     });
 
     const event2 = await store.updateEntity({
       entity: 'User',
       entityId: event.entityId,
-      data: { john: 'doe' },
+      data: { john: 'doe', roles: ['aaa'] },
     });
 
     const result = await store.getEntityData({
@@ -51,6 +51,7 @@ describe('MemoryStore', () => {
     expect(result2.deletedAt).toBe(null);
     expect(result2.blah).toBe('foo');
     expect(result2.john).toBe('doe');
+    expect(result2.roles).toEqual(['aaa']);
 
     const events = await store.getEvents({ entity: 'User' });
     expect(events.length).toBe(2);

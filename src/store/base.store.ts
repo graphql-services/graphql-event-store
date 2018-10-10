@@ -1,4 +1,4 @@
-import * as diff from 'changeset';
+import * as diff from '../changeset';
 import { v4 } from 'uuid';
 import {
   StoreEvent,
