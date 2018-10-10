@@ -1,9 +1,16 @@
 language: node_js
 sudo: false
+services:
+  - docker
 node_js:
   - 8.9.0
 before_script:
   - npm install -g codecov
-script: npm test
+jobs:
+  include:
+    - stage: test
+      script: npm test
+    - stage: deploy
+      script: make build tag push
 after_success:
   - codecov
