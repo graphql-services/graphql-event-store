@@ -48,25 +48,34 @@ export class Store {
     }
 
     let createdAt: Date = new Date();
+    let createdBy: string | null = null;
     let updatedAt: Date | null = null;
+    let updatedBy: string | null = null;
     let deletedAt: Date | null = null;
+    let deletedBy: string | null = null;
     for (const event of events) {
       if (event.type === StoreEventType.CREATED) {
         createdAt = event.date;
+        createdBy = event.principalId || null;
       }
       if (event.type === StoreEventType.UPDATED) {
         updatedAt = event.date;
+        updatedBy = event.principalId || null;
       }
       if (event.type === StoreEventType.DELETED) {
         deletedAt = event.date;
+        deletedBy = event.principalId || null;
       }
     }
 
     return {
       ...data,
       createdAt,
+      createdBy,
       updatedAt,
+      updatedBy,
       deletedAt,
+      deletedBy,
       id: props.entityId,
     };
   }

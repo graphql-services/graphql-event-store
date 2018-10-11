@@ -16,4 +16,6 @@ COPY graphql.schema /code/graphql.schema
 
 ## Principal ID
 
-You can provide header `x-jwt-subject` with ID of principal (owner of the event).
+If JWT token is provided using `authorization` header (bearer token) the `sub` attribute is used as Principal ID.
+
+_NOTE: The JWT token is not validated, just decoded_

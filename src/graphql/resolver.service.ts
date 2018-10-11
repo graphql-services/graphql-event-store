@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { decode } from 'jsonwebtoken';
 import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql';
+
 import { Store, StoreFactory } from '../store/store.factory';
 import { PubSubFactory } from '../pubsub/pubsub.factory';
 import { PubSubService } from '../pubsub/pubsub.service';
@@ -32,6 +34,16 @@ export class ResolverService {
     };
   }
 
+  principalIDFromRequest(req: any): string | null {
+    let authorization = req.headers && req.headers.authorization;
+    if (authorization) {
+      authorization = authorization.replace('Bearer ', '');
+      const payload = decode(authorization);
+      return payload.sub || null;
+    }
+    return null;
+  }
+
   readResolver(resource: string): GraphQLFieldResolver<any, any, any> {
     return async (
       parent: any,
@@ -52,7 +64,7 @@ export class ResolverService {
       ctx: any,
       info: GraphQLResolveInfo,
     ) => {
-      const principalId = ctx.headers['x-jwt-subject'];
+      const principalId = this.principalIDFromRequest(ctx);
       const event = await this.store.createEntity({
         entity: resource,
         data: args.input,
@@ -81,7 +93,7 @@ export class ResolverService {
       ctx: any,
       info: GraphQLResolveInfo,
     ) => {
-      const principalId = ctx.headers['x-jwt-subject'];
+      const principalId = this.principalIDFromRequest(ctx);
       const data = await this.store.getEntityData({
         entity: resource,
         entityId: args.id,
@@ -121,7 +133,7 @@ export class ResolverService {
       ctx: any,
       info: GraphQLResolveInfo,
     ) => {
-      const principalId = ctx.headers['x-jwt-subject'];
+      const principalId = this.principalIDFromRequest(ctx);
       const data = await this.store.getEntityData({
         entity: resource,
         entityId: args.id,

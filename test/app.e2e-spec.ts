@@ -4,6 +4,12 @@ import { Test } from '@nestjs/testing';
 import { AppModule } from './../src/app.module';
 import { INestApplication } from '@nestjs/common';
 
+const jwtToken =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
+  'eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ' +
+  '.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+const principalId = '1234567890';
+
 describe('EventSource', () => {
   let app: INestApplication;
   let test: SuperTest<any>;
@@ -22,6 +28,7 @@ describe('EventSource', () => {
   it('create entity', () => {
     return test
       .post('/graphql')
+      .set('authorization', `Bearer ${jwtToken}`)
       .send({
         query: `
         mutation {
@@ -35,6 +42,9 @@ describe('EventSource', () => {
             createdAt
             updatedAt
             deletedAt
+            createdBy
+            updatedBy
+            deletedBy
           }
         }
         `,
@@ -44,15 +54,20 @@ describe('EventSource', () => {
         const data = res.body.data.createUser;
         expect(data.username).toEqual('john.doe');
         expect(data.password).toEqual('xxx');
-        expect(data.updatedAt).toBeNull();
         expect(data.createdAt).not.toBeNull();
+        expect(data.createdBy).toEqual(principalId);
+        expect(data.updatedAt).toBeNull();
+        expect(data.updatedBy).toBeNull();
         expect(data.deletedAt).toBeNull();
+        expect(data.deletedBy).toBeNull();
+        expect(data.principalId).not.toBeNull();
       });
   });
 
   it('update entity', () => {
     return test
       .post('/graphql')
+      .set('authorization', `Bearer ${jwtToken}`)
       .send({
         query: `
         mutation {
@@ -72,6 +87,7 @@ describe('EventSource', () => {
         const data = res.body.data.createUser;
         return test
           .post('/graphql')
+          .set('authorization', `Bearer ${jwtToken}`)
           .send({
             query: `
             mutation ($id: ID!, $input: UserRawUpdateInput!) {
@@ -80,8 +96,11 @@ describe('EventSource', () => {
                 username
                 password
                 createdAt
+                createdBy
                 updatedAt
+                updatedBy
                 deletedAt
+                deletedBy
               }
             }
             `,
@@ -97,9 +116,12 @@ describe('EventSource', () => {
             const data2 = res2.body.data.updateUser;
             expect(data2.username).toEqual('john.doe2');
             expect(data2.password).toEqual('xxx');
-            expect(data2.updatedAt).not.toBeNull();
             expect(data2.createdAt).not.toBeNull();
+            expect(data2.createdBy).toEqual(principalId);
+            expect(data2.updatedAt).not.toBeNull();
+            expect(data2.updatedBy).toEqual(principalId);
             expect(data2.deletedAt).toBeNull();
+            expect(data2.deletedBy).toBeNull();
           });
       });
   });
@@ -107,6 +129,7 @@ describe('EventSource', () => {
   it('delete entity', () => {
     return test
       .post('/graphql')
+      .set('authorization', `Bearer ${jwtToken}`)
       .send({
         query: `
         mutation {
@@ -126,6 +149,7 @@ describe('EventSource', () => {
         const data = res.body.data.createUser;
         return test
           .post('/graphql')
+          .set('authorization', `Bearer ${jwtToken}`)
           .send({
             query: `
             mutation ($id: ID!) {
@@ -136,6 +160,9 @@ describe('EventSource', () => {
                 createdAt
                 updatedAt
                 deletedAt
+                createdBy
+                updatedBy
+                deletedBy
               }
             }
             `,
@@ -148,18 +175,20 @@ describe('EventSource', () => {
             const data2 = res2.body.data.deleteUser;
             expect(data2.username).toEqual('john.doe');
             expect(data2.password).toEqual('xxx');
-            expect(data2.updatedAt).toBeNull();
             expect(data2.createdAt).not.toBeNull();
+            expect(data2.updatedAt).toBeNull();
             expect(data2.deletedAt).not.toBeNull();
+            expect(data2.createdBy).toEqual(principalId);
+            expect(data2.updatedBy).toBeNull();
+            expect(data2.deletedBy).toEqual(principalId);
           });
       });
   });
 
   it('fetch events', () => {
-    const principalId = 'abcde';
     return test
       .post('/graphql')
-      .set('x-jwt-subject', principalId)
+      .set('authorization', `Bearer ${jwtToken}`)
       .send({
         query: `
         mutation {
@@ -215,6 +244,7 @@ describe('EventSource', () => {
                 query {
                   _events(cursor:"${data[0].cursor}",limit:1) {
                     id
+                    principalId
                   }
                 }
                 `,
@@ -223,7 +253,8 @@ describe('EventSource', () => {
               .expect(res2 => {
                 const data2 = res2.body.data._events;
                 expect(data2.length).toBe(1);
-                expect(data[0].principalId).not.toBeNull();
+                expect(data[0].principalId).toEqual(principalId);
+                expect(data2[0].principalId).toEqual(principalId);
               });
           });
       });
