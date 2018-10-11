@@ -28,7 +28,6 @@ describe('EventSource', () => {
   it('create entity', () => {
     return test
       .post('/graphql')
-      .set('authorization', `Bearer ${jwtToken}`)
       .send({
         query: `
         mutation {
@@ -55,11 +54,72 @@ describe('EventSource', () => {
         expect(data.username).toEqual('john.doe');
         expect(data.password).toEqual('xxx');
         expect(data.createdAt).not.toBeNull();
-        expect(data.createdBy).toEqual(principalId);
         expect(data.updatedAt).toBeNull();
         expect(data.updatedBy).toBeNull();
         expect(data.deletedAt).toBeNull();
         expect(data.deletedBy).toBeNull();
+        expect(data.principalId).not.toBeNull();
+      });
+  });
+
+  it('create entity with jwt token', () => {
+    return test
+      .post('/graphql')
+      .set('authorization', `Bearer ${jwtToken}`)
+      .send({
+        query: `
+        mutation {
+          createUser(input: {
+            username: "john.doe",
+            password: "xxx"
+          }) {
+            id
+            username
+            password
+            createdAt
+            updatedAt
+            deletedAt
+            createdBy
+            updatedBy
+            deletedBy
+          }
+        }
+        `,
+      })
+      .expect(200)
+      .expect(res => {
+        const data = res.body.data.createUser;
+        expect(data.createdBy).toEqual(principalId);
+        expect(data.principalId).not.toBeNull();
+      });
+  });
+  it('create entity with invalid jwt token', () => {
+    return test
+      .post('/graphql')
+      .set('authorization', `Bearer invalid_token`)
+      .send({
+        query: `
+        mutation {
+          createUser(input: {
+            username: "john.doe",
+            password: "xxx"
+          }) {
+            id
+            username
+            password
+            createdAt
+            updatedAt
+            deletedAt
+            createdBy
+            updatedBy
+            deletedBy
+          }
+        }
+        `,
+      })
+      .expect(200)
+      .expect(res => {
+        const data = res.body.data.createUser;
         expect(data.principalId).not.toBeNull();
       });
   });

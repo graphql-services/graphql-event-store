@@ -39,7 +39,7 @@ export class ResolverService {
     if (authorization) {
       authorization = authorization.replace('Bearer ', '');
       const payload = decode(authorization);
-      return payload.sub || null;
+      return (payload && payload.sub) || null;
     }
     return null;
   }
