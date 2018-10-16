@@ -56,6 +56,7 @@ export class DriverUtils {
           password: parsedUrl.password,
           port: parsedUrl.port,
           sid: parsedUrl.database,
+          logging: !!ENV.DEBUG,
         };
         return Object.assign(urlDriverOptions, options);
       } else {
@@ -66,6 +67,7 @@ export class DriverUtils {
           password: parsedUrl.password,
           port: parsedUrl.port,
           database: parsedUrl.database,
+          logging: !!ENV.DEBUG,
         };
         return Object.assign(urlDriverOptions, options);
       }

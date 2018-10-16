@@ -12,6 +12,7 @@ import { ModelService } from './graphql/model.service';
 import { ResolverService } from './graphql/resolver.service';
 import { StoreFactoryProvider } from './store/store.factory';
 import { PubSubFactory } from './pubsub/pubsub.factory';
+import { ForwarderFactory } from './forwader/forwarder.factory';
 
 @Module({
   imports: [GraphQLModule],
@@ -21,6 +22,7 @@ import { PubSubFactory } from './pubsub/pubsub.factory';
     ResolverService,
     StoreFactoryProvider,
     PubSubFactory,
+    ForwarderFactory,
   ],
 })
 export class AppModule implements NestModule {

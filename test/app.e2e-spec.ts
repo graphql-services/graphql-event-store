@@ -1,8 +1,15 @@
 import request, { SuperTest } from 'supertest';
 // import assert, { equal, notEqual } from 'assert';
 import { Test } from '@nestjs/testing';
-import { AppModule } from './../src/app.module';
 import { INestApplication } from '@nestjs/common';
+
+import { AppModule } from './../src/app.module';
+import { ForwarderFactory } from '../src/forwader/forwarder.factory';
+import {
+  ForwarderService,
+  ForwarderMessage,
+} from '../src/forwader/forwarder.service';
+import { StoreEvent } from '../src/store/store-event.model';
 
 const jwtToken =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
@@ -10,14 +17,32 @@ const jwtToken =
   '.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
 const principalId = '1234567890';
 
+class ForwarderServiceProxy extends ForwarderService {
+  public sentMessages: ForwarderMessage[] = [];
+  async send(message: ForwarderMessage) {
+    this.sentMessages.push(message);
+  }
+}
+
 describe('EventSource', () => {
   let app: INestApplication;
   let test: SuperTest<any>;
+  let forwardService: ForwarderServiceProxy;
 
   beforeEach(async () => {
+    forwardService = new ForwarderServiceProxy({
+      urls: ['http://example.com'],
+    });
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(ForwarderFactory)
+      .useValue({
+        getService: () => {
+          return forwardService;
+        },
+      })
+      .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
@@ -59,6 +84,8 @@ describe('EventSource', () => {
         expect(data.deletedAt).toBeNull();
         expect(data.deletedBy).toBeNull();
         expect(data.principalId).not.toBeNull();
+
+        expect(forwardService.sentMessages.length).toEqual(1);
       });
   });
 
@@ -91,6 +118,7 @@ describe('EventSource', () => {
         const data = res.body.data.createUser;
         expect(data.createdBy).toEqual(principalId);
         expect(data.principalId).not.toBeNull();
+        expect(forwardService.sentMessages.length).toEqual(1);
       });
   });
   it('create entity with invalid jwt token', () => {
@@ -241,6 +269,7 @@ describe('EventSource', () => {
             expect(data2.createdBy).toEqual(principalId);
             expect(data2.updatedBy).toBeNull();
             expect(data2.deletedBy).toEqual(principalId);
+            expect(forwardService.sentMessages.length).toEqual(2);
           });
       });
   });

@@ -7,6 +7,7 @@ interface IENV {
   DATABASE_URL: string;
   NODE_ENV: string;
   NSQ_URL: string;
+  EVENT_FORWARD_URL?: string;
   PORT: number | string;
   SENTRY_DNS?: string;
 }

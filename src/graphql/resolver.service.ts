@@ -5,19 +5,25 @@ import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql';
 import { Store, StoreFactory } from '../store/store.factory';
 import { PubSubFactory } from '../pubsub/pubsub.factory';
 import { PubSubService } from '../pubsub/pubsub.service';
+import { ForwarderService } from '../forwader/forwarder.service';
+import { ForwarderFactory } from '../forwader/forwarder.factory';
+import { StoreEvent } from 'store/store-event.model';
 
 @Injectable()
 export class ResolverService {
   private store: Store;
   private pubsub?: PubSubService;
+  private forwarder?: ForwarderService;
   constructor(
     private readonly connectionFactory: StoreFactory,
     private readonly pubsubFactory: PubSubFactory,
+    private readonly forwarderFactory: ForwarderFactory,
   ) {
     this.store = connectionFactory.getConnection();
     if (pubsubFactory.isServiceEnabled()) {
       this.pubsub = pubsubFactory.getService();
     }
+    this.forwarder = forwarderFactory.getService();
   }
 
   eventsResolver(): GraphQLFieldResolver<any, any, any> {
@@ -77,11 +83,7 @@ export class ResolverService {
         entityId: event.entityId,
       });
 
-      if (this.pubsub) {
-        await this.pubsub.publish({
-          event: { ...event, data },
-        });
-      }
+      await this.sendEvent({ ...event, data });
 
       return data;
     };
@@ -117,10 +119,8 @@ export class ResolverService {
         entityId: args.id,
       });
 
-      if (event && this.pubsub) {
-        await this.pubsub.publish({
-          event: { ...event, data: newData },
-        });
+      if (event) {
+        await this.sendEvent({ ...event, data: newData });
       }
 
       return newData;
@@ -150,10 +150,8 @@ export class ResolverService {
         principalId,
       });
 
-      if (event && this.pubsub) {
-        await this.pubsub.publish({
-          event,
-        });
+      if (event) {
+        await this.sendEvent(event);
       }
 
       return this.store.getEntityData({
@@ -161,5 +159,13 @@ export class ResolverService {
         entityId: args.id,
       });
     };
+  }
+  async sendEvent(event: StoreEvent) {
+    if (this.pubsub) {
+      await this.pubsub.publish({
+        event,
+      });
+    }
+    await this.forwarder.send({ event });
   }
 }
