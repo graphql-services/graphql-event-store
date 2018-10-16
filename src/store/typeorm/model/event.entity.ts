@@ -2,7 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn } from 'typeorm';
 import { StoreEventData, StoreEventType } from '../../store-event.model';
 // import { StoreEventType, StoreEventData } from '../../base.store';
 
-@Entity()
+@Entity({ name: '_events' })
 export class Event {
   @PrimaryColumn()
   id: string;

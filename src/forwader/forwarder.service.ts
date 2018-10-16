@@ -1,7 +1,7 @@
 import { StoreEvent } from '../store/store-event.model';
 import fetch, { RequestInit } from 'node-fetch';
 import { async } from 'rxjs/internal/scheduler/async';
-import { log } from 'logger';
+import { log } from '../logger';
 
 export interface ForwarderMessage {
   event: StoreEvent;
