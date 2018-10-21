@@ -17,7 +17,7 @@ import {
   GraphQLEnumValueConfigMap,
   getNamedType,
 } from 'graphql';
-import { StoreEvent } from '../store/store-event.model';
+import { StoreEvent, getChangedColumns } from '../store/store-event.model';
 import { GraphQLDateTime } from 'graphql-iso-date';
 
 const entityInterface = new GraphQLInterfaceType({
@@ -191,6 +191,12 @@ export class ModelSchema {
                 type: new GraphQLNonNull(GraphQLString),
                 resolve: (event: StoreEvent): string =>
                   JSON.stringify(event.data),
+              },
+              columns: {
+                type: new GraphQLList(new GraphQLNonNull(GraphQLString)),
+                resolve: (event: StoreEvent): string[] => {
+                  return getChangedColumns(event);
+                },
               },
               cursor: {
                 type: new GraphQLNonNull(GraphQLString),

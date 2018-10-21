@@ -1,5 +1,5 @@
 import * as nsq from 'nsq.js';
-import { StoreEvent } from '../store/store-event.model';
+import { StoreEvent, getChangedColumns } from '../store/store-event.model';
 
 interface PubSubMessage {
   event: StoreEvent;
@@ -30,7 +30,11 @@ export class PubSubService {
   async publish(message: PubSubMessage) {
     await this.ensureWriter();
     return new Promise(resolve => {
-      this.writer.publish('es-event', JSON.stringify(message.event), () => {
+      const data: StoreEvent & { columns: string[] } = {
+        ...message.event,
+        columns: getChangedColumns(message.event),
+      };
+      this.writer.publish('es-event', JSON.stringify(data), () => {
         resolve();
       });
     });

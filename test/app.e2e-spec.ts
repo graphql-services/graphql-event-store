@@ -314,6 +314,7 @@ describe('EventSource', () => {
                 type
                 cursor
                 principalId
+                columns
               }
             }
             `,
@@ -323,6 +324,7 @@ describe('EventSource', () => {
             const data = res.body.data._events;
             expect(data.length).toBe(2);
             expect(data[0].principalId).not.toBeNull();
+            expect(data[0].columns).toEqual(['username', 'password']);
           })
           .then(res => {
             const data = res.body.data._events;
