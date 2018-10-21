@@ -11,6 +11,6 @@ jobs:
     - stage: test
       script: npm test
     - stage: deploy
-      script: make build tag push
+      script: make build push
 after_success:
   - codecov
