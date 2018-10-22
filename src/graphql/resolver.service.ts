@@ -7,7 +7,7 @@ import { PubSubFactory } from '../pubsub/pubsub.factory';
 import { PubSubService } from '../pubsub/pubsub.service';
 import { ForwarderService } from '../forwader/forwarder.service';
 import { ForwarderFactory } from '../forwader/forwarder.factory';
-import { StoreEvent } from 'store/store-event.model';
+import { StoreAggregatedEvent } from 'store/store-event.model';
 
 @Injectable()
 export class ResolverService {
@@ -160,7 +160,7 @@ export class ResolverService {
       });
     };
   }
-  async sendEvent(event: StoreEvent) {
+  async sendEvent(event: StoreAggregatedEvent) {
     if (this.pubsub) {
       await this.pubsub.publish({
         event,
