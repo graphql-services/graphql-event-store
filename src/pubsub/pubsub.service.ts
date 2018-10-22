@@ -32,7 +32,7 @@ export class PubSubService {
     return new Promise(resolve => {
       const data: StoreAggregatedEvent & { columns: string[] } = {
         ...message.event,
-        columns: Object.keys(message.event.data),
+        columns: message.event.data ? Object.keys(message.event.data) : [],
       };
       this.writer.publish('es-event', JSON.stringify(data), () => {
         resolve();
