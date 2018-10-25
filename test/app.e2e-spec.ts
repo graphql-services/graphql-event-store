@@ -10,6 +10,8 @@ import {
   ForwarderMessage,
 } from '../src/forwader/forwarder.service';
 import { StoreEvent } from '../src/store/store-event.model';
+import { PubSubService, PubSubMessage } from '../src/pubsub/pubsub.service';
+import { PubSubFactory } from '../src/pubsub/pubsub.factory';
 
 const jwtToken =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
@@ -24,15 +26,25 @@ class ForwarderServiceProxy extends ForwarderService {
   }
 }
 
+class PubsubServiceProxy extends PubSubService {
+  public publishedMessages: PubSubMessage[] = [];
+  async publish(message: PubSubMessage): Promise<any> {
+    this.publishedMessages.push(message);
+  }
+}
+
 describe('EventSource', () => {
   let app: INestApplication;
   let test: SuperTest<any>;
   let forwardService: ForwarderServiceProxy;
+  let pubsubService: PubsubServiceProxy;
 
   beforeEach(async () => {
     forwardService = new ForwarderServiceProxy({
       urls: ['http://example.com'],
     });
+    pubsubService = new PubsubServiceProxy({ url: 'http://example.com' });
+
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -40,6 +52,15 @@ describe('EventSource', () => {
       .useValue({
         getService: () => {
           return forwardService;
+        },
+      })
+      .overrideProvider(PubSubFactory)
+      .useValue({
+        isServiceEnabled: () => {
+          return true;
+        },
+        getService: () => {
+          return pubsubService;
         },
       })
       .compile();
@@ -58,11 +79,11 @@ describe('EventSource', () => {
         mutation {
           createUser(input: {
             username: "john.doe",
-            password: "xxx"
+            age: 21
           }) {
             id
             username
-            password
+            age
             createdAt
             updatedAt
             deletedAt
@@ -77,7 +98,7 @@ describe('EventSource', () => {
       .expect(res => {
         const data = res.body.data.createUser;
         expect(data.username).toEqual('john.doe');
-        expect(data.password).toEqual('xxx');
+        expect(data.age).toEqual(21);
         expect(data.createdAt).not.toBeNull();
         expect(data.updatedAt).toBeNull();
         expect(data.updatedBy).toBeNull();
@@ -86,6 +107,15 @@ describe('EventSource', () => {
         expect(data.principalId).not.toBeNull();
 
         expect(forwardService.sentMessages.length).toEqual(1);
+        expect(forwardService.sentMessages[0].event.columns).toEqual([
+          'username',
+          'age',
+        ]);
+        expect(pubsubService.publishedMessages.length).toEqual(1);
+        expect(pubsubService.publishedMessages[0].event.columns).toEqual([
+          'username',
+          'age',
+        ]);
       });
   });
 
@@ -119,6 +149,15 @@ describe('EventSource', () => {
         expect(data.createdBy).toEqual(principalId);
         expect(data.principalId).not.toBeNull();
         expect(forwardService.sentMessages.length).toEqual(1);
+        expect(forwardService.sentMessages[0].event.columns).toEqual([
+          'username',
+          'password',
+        ]);
+        expect(pubsubService.publishedMessages.length).toEqual(1);
+        expect(pubsubService.publishedMessages[0].event.columns).toEqual([
+          'username',
+          'password',
+        ]);
       });
   });
   it('create entity with invalid jwt token', () => {
@@ -149,6 +188,16 @@ describe('EventSource', () => {
       .expect(res => {
         const data = res.body.data.createUser;
         expect(data.principalId).not.toBeNull();
+        expect(forwardService.sentMessages.length).toEqual(1);
+        expect(forwardService.sentMessages[0].event.columns).toEqual([
+          'username',
+          'password',
+        ]);
+        expect(pubsubService.publishedMessages.length).toEqual(1);
+        expect(pubsubService.publishedMessages[0].event.columns).toEqual([
+          'username',
+          'password',
+        ]);
       });
   });
 
@@ -210,6 +259,23 @@ describe('EventSource', () => {
             expect(data2.updatedBy).toEqual(principalId);
             expect(data2.deletedAt).toBeNull();
             expect(data2.deletedBy).toBeNull();
+
+            expect(forwardService.sentMessages.length).toEqual(2);
+            expect(forwardService.sentMessages[0].event.columns).toEqual([
+              'username',
+              'password',
+            ]);
+            expect(forwardService.sentMessages[1].event.columns).toEqual([
+              'username',
+            ]);
+            expect(pubsubService.publishedMessages.length).toEqual(2);
+            expect(pubsubService.publishedMessages[0].event.columns).toEqual([
+              'username',
+              'password',
+            ]);
+            expect(pubsubService.publishedMessages[1].event.columns).toEqual([
+              'username',
+            ]);
           });
       });
   });
@@ -270,6 +336,21 @@ describe('EventSource', () => {
             expect(data2.updatedBy).toBeNull();
             expect(data2.deletedBy).toEqual(principalId);
             expect(forwardService.sentMessages.length).toEqual(2);
+
+            expect(forwardService.sentMessages.length).toEqual(2);
+            expect(forwardService.sentMessages[0].event.columns).toEqual([
+              'username',
+              'password',
+            ]);
+            expect(forwardService.sentMessages[1].event.columns).toEqual([]);
+            expect(pubsubService.publishedMessages.length).toEqual(2);
+            expect(pubsubService.publishedMessages[0].event.columns).toEqual([
+              'username',
+              'password',
+            ]);
+            expect(pubsubService.publishedMessages[1].event.columns).toEqual(
+              [],
+            );
           });
       });
   });

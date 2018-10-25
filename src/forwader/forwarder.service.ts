@@ -1,5 +1,6 @@
-import { StoreAggregatedEvent } from '../store/store-event.model';
 import fetch, { RequestInit } from 'node-fetch';
+
+import { StoreAggregatedEvent } from '../store/store-event.model';
 import { log } from '../logger';
 
 export interface ForwarderMessage {

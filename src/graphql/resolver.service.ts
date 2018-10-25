@@ -7,7 +7,10 @@ import { PubSubFactory } from '../pubsub/pubsub.factory';
 import { PubSubService } from '../pubsub/pubsub.service';
 import { ForwarderService } from '../forwader/forwarder.service';
 import { ForwarderFactory } from '../forwader/forwarder.factory';
-import { StoreAggregatedEvent } from 'store/store-event.model';
+import {
+  StoreAggregatedEvent,
+  getChangedColumns,
+} from '../store/store-event.model';
 
 @Injectable()
 export class ResolverService {
@@ -78,12 +81,17 @@ export class ResolverService {
         principalId,
       });
 
+      // this is double fetching of data - could be handled by applying diff
       const data = await this.store.getEntityData({
         entity: resource,
         entityId: event.entityId,
       });
 
-      await this.sendEvent({ ...event, data });
+      await this.sendEvent({
+        ...event,
+        data,
+        columns: getChangedColumns(event),
+      });
 
       return data;
     };
@@ -120,7 +128,11 @@ export class ResolverService {
       });
 
       if (event) {
-        await this.sendEvent({ ...event, data: newData });
+        await this.sendEvent({
+          ...event,
+          data: newData,
+          columns: getChangedColumns(event),
+        });
       }
 
       return newData;
@@ -150,14 +162,21 @@ export class ResolverService {
         principalId,
       });
 
-      if (event) {
-        await this.sendEvent(event);
-      }
-
-      return this.store.getEntityData({
+      // this is double fetching of data - could be handled by applying diff
+      const newData = await this.store.getEntityData({
         entity: resource,
         entityId: args.id,
       });
+
+      if (event) {
+        await this.sendEvent({
+          ...event,
+          data: newData,
+          columns: getChangedColumns(event),
+        });
+      }
+
+      return newData;
     };
   }
   async sendEvent(event: StoreAggregatedEvent) {

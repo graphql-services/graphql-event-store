@@ -32,11 +32,17 @@ export interface IChangeItem {
   key: string[];
   value: any;
 }
-export interface StoreEvent extends StoreEventBase<IChangeItem[]> {}
+export interface StoreEvent extends StoreEventBase<IChangeItem[] | null> {}
 export interface StoreAggregatedEvent
-  extends StoreEventBase<StoreEventData | null> {}
+  extends StoreEventBase<StoreEventData | null> {
+  columns: string[];
+}
 
 export const getChangedColumns = (event: StoreEvent): string[] => {
+  if (!event.data) {
+    return [];
+  }
+
   let columns: string[] = [];
   for (const item of event.data) {
     if (item.key.length === 0) {

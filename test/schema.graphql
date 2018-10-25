@@ -1,6 +1,7 @@
 type User {
   username: String!
   password: String
+  age: Int
 }
 
 enum RoleType {

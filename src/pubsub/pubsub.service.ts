@@ -1,7 +1,7 @@
 import * as nsq from 'nsq.js';
 import { StoreEvent, StoreAggregatedEvent } from '../store/store-event.model';
 
-interface PubSubMessage {
+export interface PubSubMessage {
   event: StoreAggregatedEvent;
 }
 
@@ -30,11 +30,7 @@ export class PubSubService {
   async publish(message: PubSubMessage) {
     await this.ensureWriter();
     return new Promise(resolve => {
-      const data: StoreAggregatedEvent & { columns: string[] } = {
-        ...message.event,
-        columns: message.event.data ? Object.keys(message.event.data) : [],
-      };
-      this.writer.publish('es-event', JSON.stringify(data), () => {
+      this.writer.publish('es-event', JSON.stringify(message.event), () => {
         resolve();
       });
     });
