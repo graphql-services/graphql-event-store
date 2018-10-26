@@ -38,6 +38,7 @@
     "dotenv": "^6.0.0",
     "fastify-formbody": "^2.0.0",
     "glob": "^7.1.2",
+    "gql-directives": "0.0.4",
     "graphql": "^0.13.2",
     "graphql-iso-date": "^3.5.0",
     "graphql-playground-middleware-express": "^1.7.2",
