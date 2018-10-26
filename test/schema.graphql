@@ -1,6 +1,6 @@
 type User {
   username: String!
-  password: String
+  password: PasswordHash
   age: Int
 }
 

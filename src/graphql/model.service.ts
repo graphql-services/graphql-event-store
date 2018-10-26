@@ -23,7 +23,9 @@ export class ModelService {
   constructor(private readonly resolverService: ResolverService) {}
 
   parseModelSchema(string: string): ModelSchema {
-    const schema = buildSchema(`scalar DateTime\n${string}`);
+    const schema = buildSchema(
+      `scalar DateTime\nscalar PasswordHash\n${string}`,
+    );
     const document = parse(string);
 
     const entities: Entity[] = [];

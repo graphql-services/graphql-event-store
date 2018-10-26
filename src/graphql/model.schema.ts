@@ -16,9 +16,33 @@ import {
   GraphQLEnumType,
   GraphQLEnumValueConfigMap,
   getNamedType,
+  GraphQLScalarType,
+  Kind,
+  GraphQLScalarLiteralParser,
+  ValueNode,
 } from 'graphql';
-import { StoreEvent, getChangedColumns } from '../store/store-event.model';
+import { sha512 } from 'js-sha512';
 import { GraphQLDateTime } from 'graphql-iso-date';
+
+import { StoreEvent, getChangedColumns } from '../store/store-event.model';
+
+const GraphQLPasswordHash = new GraphQLScalarType({
+  name: 'PasswordHash',
+  description: 'adsfgsdthsdh',
+  serialize: (value: string) => {
+    return value;
+  },
+  parseValue: (value: string) => {
+    return sha512(value);
+  },
+  parseLiteral: (valueNode: ValueNode) => {
+    if (valueNode.kind !== Kind.STRING) {
+      throw new TypeError(`PasswordHash cannot represent non string type`);
+    } else {
+      return sha512(valueNode.value);
+    }
+  },
+});
 
 const entityInterface = new GraphQLInterfaceType({
   name: 'Entity',
@@ -59,8 +83,11 @@ export class EntityField {
     }
 
     const namedType = getNamedType(this.config.type);
-    if (namedType.name === 'DateTime') {
-      return GraphQLDateTime;
+    switch (namedType.name) {
+      case 'DateTime':
+        return GraphQLDateTime;
+      case 'PasswordHash':
+        return GraphQLPasswordHash;
     }
 
     return assertOutputType(this.config.type);
@@ -77,8 +104,11 @@ export class EntityField {
     }
 
     const namedType = getNamedType(this.config.type);
-    if (namedType.name === 'DateTime') {
-      return GraphQLDateTime;
+    switch (namedType.name) {
+      case 'DateTime':
+        return GraphQLDateTime;
+      case 'PasswordHash':
+        return GraphQLPasswordHash;
     }
 
     return assertInputType(this.config.type);
