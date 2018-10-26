@@ -114,14 +114,17 @@ export class Entity {
     const fields: GraphQLFieldConfigMap<any, any> = {};
     for (const field of this.fields) {
       let fieldName = field.name;
-
+      let resolve;
       if (field.isReference()) {
         fieldName += '_id';
       } else if (field.isReferenceList()) {
         fieldName += '_ids';
+        resolve = parent => {
+          return parent[fieldName] || [];
+        };
       }
 
-      fields[fieldName] = { type: field.outputType };
+      fields[fieldName] = { type: field.outputType, resolve };
     }
     fields.id = { type: new GraphQLNonNull(GraphQLID) };
     fields.createdAt = { type: new GraphQLNonNull(GraphQLDateTime) };

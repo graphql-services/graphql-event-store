@@ -120,7 +120,7 @@ describe('EventSource', () => {
       });
   });
 
-  it.only('create entity with jwt token', () => {
+  it('create entity with jwt token', () => {
     return test
       .post('/graphql')
       .set('authorization', `Bearer ${jwtToken}`)
@@ -134,6 +134,7 @@ describe('EventSource', () => {
             id
             username
             password
+            roles_ids
             createdAt
             updatedAt
             deletedAt
@@ -146,6 +147,7 @@ describe('EventSource', () => {
       })
       .expect(200)
       .expect(res => {
+        expect(res.body.data.errors).toBeUndefined();
         const data = res.body.data.createUser;
         expect(data.password).toEqual(sha512('xxx'));
         expect(data.createdBy).toEqual(principalId);
@@ -254,7 +256,7 @@ describe('EventSource', () => {
           .expect(res2 => {
             const data2 = res2.body.data.updateUser;
             expect(data2.username).toEqual('john.doe2');
-            expect(data2.password).toEqual('xxx');
+            expect(data2.password).toEqual(sha512('xxx'));
             expect(data2.createdAt).not.toBeNull();
             expect(data2.createdBy).toEqual(principalId);
             expect(data2.updatedAt).not.toBeNull();
@@ -330,7 +332,7 @@ describe('EventSource', () => {
           .expect(res2 => {
             const data2 = res2.body.data.deleteUser;
             expect(data2.username).toEqual('john.doe');
-            expect(data2.password).toEqual('xxx');
+            expect(data2.password).toEqual(sha512('xxx'));
             expect(data2.createdAt).not.toBeNull();
             expect(data2.updatedAt).toBeNull();
             expect(data2.deletedAt).not.toBeNull();
