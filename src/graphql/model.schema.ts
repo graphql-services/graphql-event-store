@@ -116,9 +116,9 @@ export class Entity {
       let fieldName = field.name;
       let resolve;
       if (field.isReference()) {
-        fieldName += '_id';
+        fieldName += 'Id';
       } else if (field.isReferenceList()) {
-        fieldName += '_ids';
+        fieldName += 'Ids';
         resolve = parent => {
           return parent[fieldName] || [];
         };
@@ -142,9 +142,9 @@ export class Entity {
       let fieldName = field.name;
 
       if (field.isReference()) {
-        fieldName += '_id';
+        fieldName += 'Id';
       } else if (field.isReferenceList()) {
-        fieldName += '_ids';
+        fieldName += 'Ids';
       }
 
       fields[fieldName] = {

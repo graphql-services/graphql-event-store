@@ -134,7 +134,7 @@ describe('EventSource', () => {
             id
             username
             password
-            roles_ids
+            rolesIds
             createdAt
             updatedAt
             deletedAt
