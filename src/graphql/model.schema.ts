@@ -16,9 +16,15 @@ import {
   GraphQLEnumType,
   GraphQLEnumValueConfigMap,
   getNamedType,
+  GraphQLScalarType,
+  Kind,
+  GraphQLScalarLiteralParser,
+  ValueNode,
 } from 'graphql';
-import { StoreEvent } from '../store/store-event.model';
 import { GraphQLDateTime } from 'graphql-iso-date';
+import { GraphQLPasswordHash } from 'gql-directives';
+
+import { StoreEvent, getChangedColumns } from '../store/store-event.model';
 
 const entityInterface = new GraphQLInterfaceType({
   name: 'Entity',
@@ -59,8 +65,11 @@ export class EntityField {
     }
 
     const namedType = getNamedType(this.config.type);
-    if (namedType.name === 'DateTime') {
-      return GraphQLDateTime;
+    switch (namedType.name) {
+      case 'DateTime':
+        return GraphQLDateTime;
+      case 'PasswordHash':
+        return GraphQLPasswordHash;
     }
 
     return assertOutputType(this.config.type);
@@ -77,8 +86,11 @@ export class EntityField {
     }
 
     const namedType = getNamedType(this.config.type);
-    if (namedType.name === 'DateTime') {
-      return GraphQLDateTime;
+    switch (namedType.name) {
+      case 'DateTime':
+        return GraphQLDateTime;
+      case 'PasswordHash':
+        return GraphQLPasswordHash;
     }
 
     return assertInputType(this.config.type);
@@ -102,14 +114,17 @@ export class Entity {
     const fields: GraphQLFieldConfigMap<any, any> = {};
     for (const field of this.fields) {
       let fieldName = field.name;
-
+      let resolve;
       if (field.isReference()) {
-        fieldName += '_id';
+        fieldName += 'Id';
       } else if (field.isReferenceList()) {
-        fieldName += '_ids';
+        fieldName += 'Ids';
+        resolve = parent => {
+          return parent[fieldName] || [];
+        };
       }
 
-      fields[fieldName] = { type: field.outputType };
+      fields[fieldName] = { type: field.outputType, resolve };
     }
     fields.id = { type: new GraphQLNonNull(GraphQLID) };
     fields.createdAt = { type: new GraphQLNonNull(GraphQLDateTime) };
@@ -127,9 +142,9 @@ export class Entity {
       let fieldName = field.name;
 
       if (field.isReference()) {
-        fieldName += '_id';
+        fieldName += 'Id';
       } else if (field.isReferenceList()) {
-        fieldName += '_ids';
+        fieldName += 'Ids';
       }
 
       fields[fieldName] = {
@@ -191,6 +206,12 @@ export class ModelSchema {
                 type: new GraphQLNonNull(GraphQLString),
                 resolve: (event: StoreEvent): string =>
                   JSON.stringify(event.data),
+              },
+              columns: {
+                type: new GraphQLList(new GraphQLNonNull(GraphQLString)),
+                resolve: (event: StoreEvent): string[] => {
+                  return getChangedColumns(event);
+                },
               },
               cursor: {
                 type: new GraphQLNonNull(GraphQLString),

@@ -4,18 +4,20 @@ import {
   MiddlewareConsumer,
   RequestMethod,
 } from '@nestjs/common';
-import { AppService } from './app.service';
 import { graphqlExpress } from 'apollo-server-express';
 import expressPlayground from 'graphql-playground-middleware-express';
 import { GraphQLModule } from '@nestjs/graphql';
+
+import { AppService } from './app.service';
 import { ModelService } from './graphql/model.service';
 import { ResolverService } from './graphql/resolver.service';
 import { StoreFactoryProvider } from './store/store.factory';
 import { PubSubFactory } from './pubsub/pubsub.factory';
 import { ForwarderFactory } from './forwader/forwarder.factory';
+import { HealthCheckModule } from './healthcheck/healthcheck.module';
 
 @Module({
-  imports: [GraphQLModule],
+  imports: [GraphQLModule, HealthCheckModule],
   providers: [
     AppService,
     ModelService,

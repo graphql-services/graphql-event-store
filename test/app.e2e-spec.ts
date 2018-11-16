@@ -10,6 +10,9 @@ import {
   ForwarderMessage,
 } from '../src/forwader/forwarder.service';
 import { StoreEvent } from '../src/store/store-event.model';
+import { PubSubService, PubSubMessage } from '../src/pubsub/pubsub.service';
+import { PubSubFactory } from '../src/pubsub/pubsub.factory';
+import { sha512 } from 'js-sha512';
 
 const jwtToken =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
@@ -24,15 +27,25 @@ class ForwarderServiceProxy extends ForwarderService {
   }
 }
 
+class PubsubServiceProxy extends PubSubService {
+  public publishedMessages: PubSubMessage[] = [];
+  async publish(message: PubSubMessage): Promise<any> {
+    this.publishedMessages.push(message);
+  }
+}
+
 describe('EventSource', () => {
   let app: INestApplication;
   let test: SuperTest<any>;
   let forwardService: ForwarderServiceProxy;
+  let pubsubService: PubsubServiceProxy;
 
   beforeEach(async () => {
     forwardService = new ForwarderServiceProxy({
       urls: ['http://example.com'],
     });
+    pubsubService = new PubsubServiceProxy({ url: 'http://example.com' });
+
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -40,6 +53,15 @@ describe('EventSource', () => {
       .useValue({
         getService: () => {
           return forwardService;
+        },
+      })
+      .overrideProvider(PubSubFactory)
+      .useValue({
+        isServiceEnabled: () => {
+          return true;
+        },
+        getService: () => {
+          return pubsubService;
         },
       })
       .compile();
@@ -58,11 +80,11 @@ describe('EventSource', () => {
         mutation {
           createUser(input: {
             username: "john.doe",
-            password: "xxx"
+            age: 21
           }) {
             id
             username
-            password
+            age
             createdAt
             updatedAt
             deletedAt
@@ -77,7 +99,7 @@ describe('EventSource', () => {
       .expect(res => {
         const data = res.body.data.createUser;
         expect(data.username).toEqual('john.doe');
-        expect(data.password).toEqual('xxx');
+        expect(data.age).toEqual(21);
         expect(data.createdAt).not.toBeNull();
         expect(data.updatedAt).toBeNull();
         expect(data.updatedBy).toBeNull();
@@ -86,6 +108,15 @@ describe('EventSource', () => {
         expect(data.principalId).not.toBeNull();
 
         expect(forwardService.sentMessages.length).toEqual(1);
+        expect(forwardService.sentMessages[0].event.columns).toEqual([
+          'username',
+          'age',
+        ]);
+        expect(pubsubService.publishedMessages.length).toEqual(1);
+        expect(pubsubService.publishedMessages[0].event.columns).toEqual([
+          'username',
+          'age',
+        ]);
       });
   });
 
@@ -103,6 +134,7 @@ describe('EventSource', () => {
             id
             username
             password
+            rolesIds
             createdAt
             updatedAt
             deletedAt
@@ -115,10 +147,21 @@ describe('EventSource', () => {
       })
       .expect(200)
       .expect(res => {
+        expect(res.body.data.errors).toBeUndefined();
         const data = res.body.data.createUser;
+        expect(data.password).toEqual(sha512('xxx'));
         expect(data.createdBy).toEqual(principalId);
         expect(data.principalId).not.toBeNull();
         expect(forwardService.sentMessages.length).toEqual(1);
+        expect(forwardService.sentMessages[0].event.columns).toEqual([
+          'username',
+          'password',
+        ]);
+        expect(pubsubService.publishedMessages.length).toEqual(1);
+        expect(pubsubService.publishedMessages[0].event.columns).toEqual([
+          'username',
+          'password',
+        ]);
       });
   });
   it('create entity with invalid jwt token', () => {
@@ -149,6 +192,16 @@ describe('EventSource', () => {
       .expect(res => {
         const data = res.body.data.createUser;
         expect(data.principalId).not.toBeNull();
+        expect(forwardService.sentMessages.length).toEqual(1);
+        expect(forwardService.sentMessages[0].event.columns).toEqual([
+          'username',
+          'password',
+        ]);
+        expect(pubsubService.publishedMessages.length).toEqual(1);
+        expect(pubsubService.publishedMessages[0].event.columns).toEqual([
+          'username',
+          'password',
+        ]);
       });
   });
 
@@ -203,13 +256,30 @@ describe('EventSource', () => {
           .expect(res2 => {
             const data2 = res2.body.data.updateUser;
             expect(data2.username).toEqual('john.doe2');
-            expect(data2.password).toEqual('xxx');
+            expect(data2.password).toEqual(sha512('xxx'));
             expect(data2.createdAt).not.toBeNull();
             expect(data2.createdBy).toEqual(principalId);
             expect(data2.updatedAt).not.toBeNull();
             expect(data2.updatedBy).toEqual(principalId);
             expect(data2.deletedAt).toBeNull();
             expect(data2.deletedBy).toBeNull();
+
+            expect(forwardService.sentMessages.length).toEqual(2);
+            expect(forwardService.sentMessages[0].event.columns).toEqual([
+              'username',
+              'password',
+            ]);
+            expect(forwardService.sentMessages[1].event.columns).toEqual([
+              'username',
+            ]);
+            expect(pubsubService.publishedMessages.length).toEqual(2);
+            expect(pubsubService.publishedMessages[0].event.columns).toEqual([
+              'username',
+              'password',
+            ]);
+            expect(pubsubService.publishedMessages[1].event.columns).toEqual([
+              'username',
+            ]);
           });
       });
   });
@@ -262,7 +332,7 @@ describe('EventSource', () => {
           .expect(res2 => {
             const data2 = res2.body.data.deleteUser;
             expect(data2.username).toEqual('john.doe');
-            expect(data2.password).toEqual('xxx');
+            expect(data2.password).toEqual(sha512('xxx'));
             expect(data2.createdAt).not.toBeNull();
             expect(data2.updatedAt).toBeNull();
             expect(data2.deletedAt).not.toBeNull();
@@ -270,42 +340,58 @@ describe('EventSource', () => {
             expect(data2.updatedBy).toBeNull();
             expect(data2.deletedBy).toEqual(principalId);
             expect(forwardService.sentMessages.length).toEqual(2);
+
+            expect(forwardService.sentMessages.length).toEqual(2);
+            expect(forwardService.sentMessages[0].event.columns).toEqual([
+              'username',
+              'password',
+            ]);
+            expect(forwardService.sentMessages[1].event.columns).toEqual([]);
+            expect(pubsubService.publishedMessages.length).toEqual(2);
+            expect(pubsubService.publishedMessages[0].event.columns).toEqual([
+              'username',
+              'password',
+            ]);
+            expect(pubsubService.publishedMessages[1].event.columns).toEqual(
+              [],
+            );
           });
       });
   });
 
   it('fetch events', () => {
-    return test
-      .post('/graphql')
-      .set('authorization', `Bearer ${jwtToken}`)
-      .send({
-        query: `
-        mutation {
-          user1:createUser(input: {
-            username: "john.doe",
-            password: "xxx"
-          }) {
-            id
-            username
-            password
-          }
-          user2:createUser(input: {
-            username: "jane.siri",
-            password: "nothingspecial"
-          }) {
-            id
-            username
-            password
-          }
-        }
-        `,
-      })
-      .expect(200)
-      .then(() => {
-        return test
-          .post('/graphql')
-          .send({
-            query: `
+    return (
+      test
+        .post('/graphql')
+        .set('authorization', `Bearer ${jwtToken}`)
+        .send({
+          query: `
+            mutation {
+              user1:createUser(input: {
+                username: "john.doe",
+                password: "xxx"
+              }) {
+                id
+                username
+                password
+              }
+              user2:createUser(input: {
+                username: "jane.siri",
+                password: "nothingspecial"
+              }) {
+                id
+                username
+                password
+              }
+            }
+            `,
+        })
+        // .expect(200)
+        .then(() => {
+          return test
+            .post('/graphql')
+            .send({
+              query: `
             query {
               _events {
                 id
@@ -314,22 +400,24 @@ describe('EventSource', () => {
                 type
                 cursor
                 principalId
+                columns
               }
             }
             `,
-          })
-          .expect(200)
-          .expect(res => {
-            const data = res.body.data._events;
-            expect(data.length).toBe(2);
-            expect(data[0].principalId).not.toBeNull();
-          })
-          .then(res => {
-            const data = res.body.data._events;
-            return test
-              .post('/graphql')
-              .send({
-                query: `
+            })
+            .expect(200)
+            .expect(res => {
+              const data = res.body.data._events;
+              expect(data.length).toBe(2);
+              expect(data[0].principalId).not.toBeNull();
+              expect(data[0].columns).toEqual(['username', 'password']);
+            })
+            .then(res => {
+              const data = res.body.data._events;
+              return test
+                .post('/graphql')
+                .send({
+                  query: `
                 query {
                   _events(cursor:"${data[0].cursor}",limit:1) {
                     id
@@ -337,15 +425,25 @@ describe('EventSource', () => {
                   }
                 }
                 `,
-              })
-              .expect(200)
-              .expect(res2 => {
-                const data2 = res2.body.data._events;
-                expect(data2.length).toBe(1);
-                expect(data[0].principalId).toEqual(principalId);
-                expect(data2[0].principalId).toEqual(principalId);
-              });
-          });
+                })
+                .expect(200)
+                .expect(res2 => {
+                  const data2 = res2.body.data._events;
+                  expect(data2.length).toBe(1);
+                  expect(data[0].principalId).toEqual(principalId);
+                  expect(data2[0].principalId).toEqual(principalId);
+                });
+            });
+        })
+    );
+  });
+
+  it('should provide healthcheck status', async () => {
+    await test
+      .get('/healthcheck')
+      .expect(200)
+      .expect(res => {
+        expect(res.body.status).toBe('OK');
       });
   });
 });

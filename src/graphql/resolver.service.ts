@@ -7,7 +7,10 @@ import { PubSubFactory } from '../pubsub/pubsub.factory';
 import { PubSubService } from '../pubsub/pubsub.service';
 import { ForwarderService } from '../forwader/forwarder.service';
 import { ForwarderFactory } from '../forwader/forwarder.factory';
-import { StoreEvent } from 'store/store-event.model';
+import {
+  StoreAggregatedEvent,
+  getChangedColumns,
+} from '../store/store-event.model';
 
 @Injectable()
 export class ResolverService {
@@ -50,19 +53,19 @@ export class ResolverService {
     return null;
   }
 
-  readResolver(resource: string): GraphQLFieldResolver<any, any, any> {
-    return async (
-      parent: any,
-      args: { id: string },
-      ctx: any,
-      info: GraphQLResolveInfo,
-    ) => {
-      return await this.store.getEntityData({
-        entity: resource,
-        entityId: args.id,
-      });
-    };
-  }
+  // readResolver(resource: string): GraphQLFieldResolver<any, any, any> {
+  //   return async (
+  //     parent: any,
+  //     args: { id: string },
+  //     ctx: any,
+  //     info: GraphQLResolveInfo,
+  //   ) => {
+  //     return await this.store.getEntityData({
+  //       entity: resource,
+  //       entityId: args.id,
+  //     });
+  //   };
+  // }
   createResolver(resource: string): GraphQLFieldResolver<any, any, any> {
     return async (
       parent: any,
@@ -78,14 +81,17 @@ export class ResolverService {
         principalId,
       });
 
-      const data = await this.store.getEntityData({
+      await this.sendEvent({
+        ...event,
+        // data,
+        columns: getChangedColumns(event),
+      });
+
+      // this is double fetching of data - could be handled by applying diff
+      return this.store.getEntityData({
         entity: resource,
         entityId: event.entityId,
       });
-
-      await this.sendEvent({ ...event, data });
-
-      return data;
     };
   }
   updateResolver(resource: string): GraphQLFieldResolver<any, any, any> {
@@ -113,17 +119,19 @@ export class ResolverService {
         principalId,
       });
 
+      if (event) {
+        await this.sendEvent({
+          ...event,
+          // data: newData,
+          columns: getChangedColumns(event),
+        });
+      }
+
       // this is double fetching of data - could be handled by applying diff
-      const newData = await this.store.getEntityData({
+      return this.store.getEntityData({
         entity: resource,
         entityId: args.id,
       });
-
-      if (event) {
-        await this.sendEvent({ ...event, data: newData });
-      }
-
-      return newData;
     };
   }
   deleteResolver(resource: string): GraphQLFieldResolver<any, any, any> {
@@ -151,16 +159,21 @@ export class ResolverService {
       });
 
       if (event) {
-        await this.sendEvent(event);
+        await this.sendEvent({
+          ...event,
+          // data: newData,
+          columns: getChangedColumns(event),
+        });
       }
 
+      // this is double fetching of data - could be handled by applying diff
       return this.store.getEntityData({
         entity: resource,
         entityId: args.id,
       });
     };
   }
-  async sendEvent(event: StoreEvent) {
+  async sendEvent(event: StoreAggregatedEvent) {
     if (this.pubsub) {
       await this.pubsub.publish({
         event,

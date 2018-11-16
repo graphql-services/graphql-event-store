@@ -1,8 +1,8 @@
 import * as nsq from 'nsq.js';
-import { StoreEvent } from '../store/store-event.model';
+import { StoreEvent, StoreAggregatedEvent } from '../store/store-event.model';
 
-interface PubSubMessage {
-  event: StoreEvent;
+export interface PubSubMessage {
+  event: StoreAggregatedEvent;
 }
 
 export class PubSubService {

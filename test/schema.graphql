@@ -1,6 +1,8 @@
 type User {
   username: String!
-  password: String
+  password: PasswordHash
+  age: Int
+  roles: [Role!]! @relation(inverse: users)
 }
 
 enum RoleType {
@@ -11,6 +13,7 @@ enum RoleType {
 type Role {
   name: String
   type: RoleType
+  users: [User!]! @relation(inverse: roles)
 }
 
 type Company {
