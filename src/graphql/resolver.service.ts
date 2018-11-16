@@ -53,19 +53,19 @@ export class ResolverService {
     return null;
   }
 
-  readResolver(resource: string): GraphQLFieldResolver<any, any, any> {
-    return async (
-      parent: any,
-      args: { id: string },
-      ctx: any,
-      info: GraphQLResolveInfo,
-    ) => {
-      return await this.store.getEntityData({
-        entity: resource,
-        entityId: args.id,
-      });
-    };
-  }
+  // readResolver(resource: string): GraphQLFieldResolver<any, any, any> {
+  //   return async (
+  //     parent: any,
+  //     args: { id: string },
+  //     ctx: any,
+  //     info: GraphQLResolveInfo,
+  //   ) => {
+  //     return await this.store.getEntityData({
+  //       entity: resource,
+  //       entityId: args.id,
+  //     });
+  //   };
+  // }
   createResolver(resource: string): GraphQLFieldResolver<any, any, any> {
     return async (
       parent: any,
@@ -81,19 +81,17 @@ export class ResolverService {
         principalId,
       });
 
-      // this is double fetching of data - could be handled by applying diff
-      const data = await this.store.getEntityData({
-        entity: resource,
-        entityId: event.entityId,
-      });
-
       await this.sendEvent({
         ...event,
-        data,
+        // data,
         columns: getChangedColumns(event),
       });
 
-      return data;
+      // this is double fetching of data - could be handled by applying diff
+      return this.store.getEntityData({
+        entity: resource,
+        entityId: event.entityId,
+      });
     };
   }
   updateResolver(resource: string): GraphQLFieldResolver<any, any, any> {
@@ -121,21 +119,19 @@ export class ResolverService {
         principalId,
       });
 
-      // this is double fetching of data - could be handled by applying diff
-      const newData = await this.store.getEntityData({
-        entity: resource,
-        entityId: args.id,
-      });
-
       if (event) {
         await this.sendEvent({
           ...event,
-          data: newData,
+          // data: newData,
           columns: getChangedColumns(event),
         });
       }
 
-      return newData;
+      // this is double fetching of data - could be handled by applying diff
+      return this.store.getEntityData({
+        entity: resource,
+        entityId: args.id,
+      });
     };
   }
   deleteResolver(resource: string): GraphQLFieldResolver<any, any, any> {
@@ -162,21 +158,19 @@ export class ResolverService {
         principalId,
       });
 
-      // this is double fetching of data - could be handled by applying diff
-      const newData = await this.store.getEntityData({
-        entity: resource,
-        entityId: args.id,
-      });
-
       if (event) {
         await this.sendEvent({
           ...event,
-          data: newData,
+          // data: newData,
           columns: getChangedColumns(event),
         });
       }
 
-      return newData;
+      // this is double fetching of data - could be handled by applying diff
+      return this.store.getEntityData({
+        entity: resource,
+        entityId: args.id,
+      });
     };
   }
   async sendEvent(event: StoreAggregatedEvent) {
