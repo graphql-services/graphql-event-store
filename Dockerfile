@@ -7,8 +7,8 @@ COPY . /code
 RUN apk --no-cache add --virtual native-deps \
     g++ gcc libgcc libstdc++ linux-headers make python && \
     yarn add node-gyp -g && \
-    rm -rf node_modules && \
-    yarn --production && yarn build && \
+    yarn && yarn build && \
+    rm -rf node_modules && yarn --production && \
     apk del native-deps
 
 ENTRYPOINT []
