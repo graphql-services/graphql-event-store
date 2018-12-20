@@ -48,6 +48,9 @@ export class ResolverService {
     if (authorization) {
       authorization = authorization.replace('Bearer ', '');
       const payload = decode(authorization);
+      if (typeof payload === 'string') {
+        return null;
+      }
       return (payload && payload.sub) || null;
     }
     return null;

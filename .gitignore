@@ -1,5 +1,6 @@
 .env
 test.db
+dist 
 
 # Logs
 logs

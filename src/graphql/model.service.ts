@@ -33,23 +33,28 @@ export class ModelService {
       if (_def.kind === 'ObjectTypeDefinition') {
         const def = _def as ObjectTypeDefinitionNode;
         const name = def.name.value;
-        const fields = def.fields.map(field => {
-          const type = typeFromAST(schema, field.type);
-          return new EntityField({ type, name: field.name.value });
-        });
+        const fields = def.fields
+          .map(field => {
+            if (field.type.kind === 'NamedType') {
+              const type = typeFromAST(schema, field.type);
+              return new EntityField({ type, name: field.name.value });
+            }
+            return null;
+          })
+          .filter(x => x);
         entities.push(new Entity({ name, fields }));
       }
     }
     return new ModelSchema({ entities });
   }
 
-  readForEntity(entity: Entity): GraphQLFieldConfig<any, any> {
-    return {
-      type: entity.getObjectType(),
-      args: { id: { type: new GraphQLNonNull(GraphQLID) } },
-      resolve: this.resolverService.readResolver(entity.name),
-    };
-  }
+  // readForEntity(entity: Entity): GraphQLFieldConfig<any, any> {
+  //   return {
+  //     type: entity.getObjectType(),
+  //     args: { id: { type: new GraphQLNonNull(GraphQLID) } },
+  //     resolve: this.resolverService.readResolver(entity.name),
+  //   };
+  // }
   createForEntity(entity: Entity): GraphQLFieldConfig<any, any> {
     return {
       type: new GraphQLNonNull(entity.getObjectType()),

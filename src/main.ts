@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ENV } from 'env';
+import { ENV } from './env';
 import * as Sentry from '@sentry/node';
 
 if (ENV.SENTRY_DNS) {

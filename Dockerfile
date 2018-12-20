@@ -8,8 +8,8 @@ RUN apk --no-cache add --virtual native-deps \
     g++ gcc libgcc libstdc++ linux-headers make python && \
     yarn add node-gyp -g && \
     rm -rf node_modules && \
-    yarn && \
+    yarn --production && yarn build && \
     apk del native-deps
 
 ENTRYPOINT []
-CMD ["yarn","start"]
+CMD ["yarn","start:prod"]
