@@ -39,6 +39,10 @@ export class ModelService {
               const type = typeFromAST(schema, field.type);
               return new EntityField({ type, name: field.name.value });
             }
+            if (field.type.kind === 'NonNullType') {
+              const type = typeFromAST(schema, field.type);
+              return new EntityField({ type, name: field.name.value });
+            }
             return null;
           })
           .filter(x => x);
