@@ -37,12 +37,12 @@ export class DatabaseStore extends Store {
         DriverUtils.buildDriverOptions(this.options),
       );
 
+      this.repository = this.connection.getRepository(Event);
+
       if (ENV.NODE_ENV !== 'production') {
         global.console.log('Synchronizing database (NODE_ENV: !production)');
         await this.connection.synchronize();
       }
-
-      this.repository = this.connection.getRepository(Event);
     }
     return this.repository;
   }
