@@ -44,7 +44,7 @@ export class ResolverService {
         entity: args.entity,
         entityId: args.id,
         cursor: args.cursor,
-        limit: args.limit,
+        limit: args.limit || 30,
         sort: args.sort,
       });
     };
