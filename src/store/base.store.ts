@@ -16,6 +16,7 @@ export class Store {
     entityId?: string;
     cursor?: string;
     limit?: number;
+    sort?: string;
   }): Promise<StoreEvent[]> {
     throw new Error('not implemented');
   }

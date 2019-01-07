@@ -330,6 +330,7 @@ describe('EventSource', () => {
           })
           .expect(200)
           .expect(res2 => {
+            // console.log('??', res2.text);
             const data2 = res2.body.data.deleteUser;
             expect(data2.username).toEqual('john.doe');
             expect(data2.password).toEqual(sha512('xxx'));
@@ -393,7 +394,7 @@ describe('EventSource', () => {
             .send({
               query: `
             query {
-              _events {
+              _events(sort:DATE_DESC) {
                 id
                 entity
                 entityId

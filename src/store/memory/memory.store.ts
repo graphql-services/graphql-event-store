@@ -9,6 +9,7 @@ export class MemoryStore extends Store {
     entityId?: string;
     cursor?: string;
     limit?: number;
+    sort?: string;
   }): Promise<StoreEvent[]> {
     let events = this.events;
 

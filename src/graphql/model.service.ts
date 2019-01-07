@@ -121,6 +121,7 @@ export class ModelService {
           description: 'Fetch items after this cursor',
         },
         limit: { type: GraphQLInt },
+        sort: { type: modelSchema.getSortEnumType() },
       },
       resolve: this.resolverService.eventsResolver(),
     };

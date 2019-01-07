@@ -190,6 +190,21 @@ export class ModelSchema {
     return this.entitiesEnumType;
   }
 
+  private sortEnumType?: GraphQLEnumType;
+  getSortEnumType(): GraphQLEnumType {
+    if (!this.sortEnumType) {
+      const values: GraphQLEnumValueConfigMap = {};
+      values.DATE_DESC = { value: 'date:DESC' };
+      values.DATE_ASC = { value: 'date:ASC' };
+
+      this.sortEnumType = new GraphQLEnumType({
+        values,
+        name: 'EventEntitiesSort',
+      });
+    }
+    return this.sortEnumType;
+  }
+
   private eventType?: GraphQLOutputType;
   getEventType(): GraphQLOutputType {
     if (!this.eventType) {

@@ -32,13 +32,20 @@ export class ResolverService {
   eventsResolver(): GraphQLFieldResolver<any, any, any> {
     return (
       parent: any,
-      args: { entity: string; id: string; cursor: string; limit: number },
+      args: {
+        entity: string;
+        id: string;
+        cursor: string;
+        limit: number;
+        sort: string;
+      },
     ) => {
       return this.store.getEvents({
         entity: args.entity,
         entityId: args.id,
         cursor: args.cursor,
         limit: args.limit,
+        sort: args.sort,
       });
     };
   }

@@ -91,8 +91,11 @@ describe('DatabaseStore', () => {
     expect(result2.deletedAt).not.toBe(null);
     expect(result2.blah).toBe('foo');
 
-    const events = await store.getEvents({ entity: 'User' });
+    const events = await store.getEvents({ entity: 'User', sort: 'date:DESC' });
     expect(events.length).toBe(2);
+    expect(events[1].date.getTime()).toBeLessThanOrEqual(
+      events[0].date.getTime(),
+    );
   });
 
   it('should fetch created entity', async () => {

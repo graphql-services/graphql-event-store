@@ -52,6 +52,7 @@ export class DatabaseStore extends Store {
     entityId?: string;
     cursor?: string;
     limit?: number;
+    sort?: string;
   }): Promise<StoreEvent[]> {
     const repo = await this.getRepository();
 
@@ -59,10 +60,14 @@ export class DatabaseStore extends Store {
     if (props.entity) where.entity = props.entity;
     if (props.entityId) where.entityId = props.entityId;
     if (props.cursor) where.cursor = MoreThan(props.cursor);
-
+    const order: any = {};
+    if (props.sort) {
+      const [column, sort] = props.sort.split(':');
+      order[column] = sort;
+    } else order.cursor = 'ASC';
     const events = await repo.find({
       where,
-      order: { cursor: 'ASC' },
+      order,
       take: props.limit,
     });
 
