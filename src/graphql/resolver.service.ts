@@ -184,11 +184,11 @@ export class ResolverService {
     };
   }
   async sendEvent(event: StoreAggregatedEvent) {
+    await this.forwarder.send({ event });
     if (this.pubsub) {
       await this.pubsub.publish({
         event,
       });
     }
-    await this.forwarder.send({ event });
   }
 }
