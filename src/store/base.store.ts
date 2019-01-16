@@ -6,6 +6,7 @@ import {
   StoreEventOutputData,
   StoreEventType,
 } from './store-event.model';
+import { log } from '../logger';
 
 const createDiff = diff;
 export class Store {
@@ -122,6 +123,14 @@ export class Store {
 
     const newData = Object.assign({}, currentData, props.data);
     const changes = createDiff(currentData, newData);
+    log(
+      'changes for event',
+      JSON.stringify(currentData),
+      '=>',
+      JSON.stringify(newData),
+      ' == ',
+      JSON.stringify(changes),
+    );
 
     if (changes.length > 0) {
       const entityDate = new Date();
