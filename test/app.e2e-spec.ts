@@ -164,6 +164,7 @@ describe('EventSource', () => {
         ]);
       });
   });
+
   it('create entity with invalid jwt token', () => {
     return test
       .post('/graphql')
@@ -214,7 +215,8 @@ describe('EventSource', () => {
         mutation {
           createUser(input: {
             username: "john.doe",
-            password: "xxx"
+            password: "xxx",
+            birthdate: "2000-01-01T09:00:00Z"
           }) {
             id
             username
@@ -249,6 +251,7 @@ describe('EventSource', () => {
               id: data.id,
               input: {
                 username: 'john.doe2',
+                birthdate: '2000-01-01T09:10:00Z',
               },
             },
           })
@@ -268,6 +271,92 @@ describe('EventSource', () => {
             expect(forwardService.sentMessages[0].event.columns).toEqual([
               'username',
               'password',
+              'birthdate',
+            ]);
+            expect(forwardService.sentMessages[1].event.columns).toEqual([
+              'username',
+              'birthdate',
+            ]);
+            expect(pubsubService.publishedMessages.length).toEqual(2);
+            expect(pubsubService.publishedMessages[0].event.columns).toEqual([
+              'username',
+              'password',
+              'birthdate',
+            ]);
+            expect(pubsubService.publishedMessages[1].event.columns).toEqual([
+              'username',
+              'birthdate',
+            ]);
+          });
+      });
+  });
+
+  it('date changes recognition', () => {
+    return test
+      .post('/graphql')
+      .set('authorization', `Bearer ${jwtToken}`)
+      .send({
+        query: `
+        mutation {
+          createUser(input: {
+            username: "john.doe",
+            password: "xxx",
+            birthdate: "2000-01-01T09:00:00Z"
+          }) {
+            id
+            username
+            password
+          }
+        }
+        `,
+      })
+      .expect(200)
+      .then(res => {
+        const data = res.body.data.createUser;
+        return test
+          .post('/graphql')
+          .set('authorization', `Bearer ${jwtToken}`)
+          .send({
+            query: `
+            mutation ($id: ID!, $input: UserRawUpdateInput!) {
+              updateUser(id: $id, input: $input) {
+                id
+                username
+                password
+                createdAt
+                createdBy
+                updatedAt
+                updatedBy
+                deletedAt
+                deletedBy
+              }
+            }
+            `,
+            variables: {
+              id: data.id,
+              input: {
+                username: 'john.doe2',
+                birthdate: '2000-01-01T09:00:00Z',
+              },
+            },
+          })
+          .expect(200)
+          .expect(res2 => {
+            const data2 = res2.body.data.updateUser;
+            expect(data2.username).toEqual('john.doe2');
+            expect(data2.password).toEqual(sha512('xxx'));
+            expect(data2.createdAt).not.toBeNull();
+            expect(data2.createdBy).toEqual(principalId);
+            expect(data2.updatedAt).not.toBeNull();
+            expect(data2.updatedBy).toEqual(principalId);
+            expect(data2.deletedAt).toBeNull();
+            expect(data2.deletedBy).toBeNull();
+
+            expect(forwardService.sentMessages.length).toEqual(2);
+            expect(forwardService.sentMessages[0].event.columns).toEqual([
+              'username',
+              'password',
+              'birthdate',
             ]);
             expect(forwardService.sentMessages[1].event.columns).toEqual([
               'username',
@@ -276,6 +365,7 @@ describe('EventSource', () => {
             expect(pubsubService.publishedMessages[0].event.columns).toEqual([
               'username',
               'password',
+              'birthdate',
             ]);
             expect(pubsubService.publishedMessages[1].event.columns).toEqual([
               'username',

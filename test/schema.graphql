@@ -2,6 +2,7 @@ type User {
   username: String!
   password: PasswordHash
   age: Int
+  birthdate: DateTime
   roles: [Role!]! @relation(inverse: users)
 }
 

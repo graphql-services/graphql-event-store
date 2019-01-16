@@ -90,12 +90,15 @@ export class Store {
   }): Promise<StoreEvent> {
     const entityId = v4();
     const entityDate = new Date();
+
+    const sanitizedData = JSON.parse(JSON.stringify(props.data));
+
     const event: StoreEvent = {
       entityId,
       id: v4(),
       entity: props.entity,
       operationName: props.operationName,
-      data: createDiff(null, props.data),
+      data: createDiff(null, sanitizedData),
       type: StoreEventType.CREATED,
       cursor: entityDate.toISOString() + '.' + process.hrtime()[1],
       date: entityDate,
@@ -121,7 +124,8 @@ export class Store {
 
     const currentData = await this.mergeEvents(events);
 
-    const newData = Object.assign({}, currentData, props.data);
+    const sanitizedData = JSON.parse(JSON.stringify(props.data));
+    const newData = Object.assign({}, currentData, sanitizedData);
     const changes = createDiff(currentData, newData);
     log(
       'changes for event',
