@@ -38,6 +38,10 @@ export interface StoreAggregatedEvent
   columns: string[];
 }
 
+const onlyUnique = (value, index, self) => {
+  return self.indexOf(value) === index;
+};
+
 export const getChangedColumns = (event: StoreEvent): string[] => {
   if (!event.data) {
     return [];
@@ -53,5 +57,5 @@ export const getChangedColumns = (event: StoreEvent): string[] => {
     }
   }
 
-  return columns;
+  return columns.filter(onlyUnique);
 };
