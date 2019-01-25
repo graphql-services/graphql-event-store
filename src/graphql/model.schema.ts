@@ -243,7 +243,7 @@ export class ModelSchema {
                   }),
                 ),
               },
-              date: { type: new GraphQLNonNull(GraphQLString) },
+              date: { type: new GraphQLNonNull(GraphQLDateTime) },
               principalId: { type: GraphQLID },
             },
           }),
