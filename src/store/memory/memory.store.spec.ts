@@ -34,7 +34,8 @@ describe('MemoryStore', () => {
     const event2 = await store.updateEntity({
       entity: 'User',
       entityId: event.entityId,
-      data: { john: 'doe', roles: ['aaa'] },
+      oldData: { blah: 'foo', roles: ['aaa', 'bbb'] },
+      newData: { john: 'doe', roles: ['aaa'] },
     });
 
     const result = await store.getEntityData({
@@ -100,7 +101,11 @@ describe('MemoryStore', () => {
     await store.updateEntity({
       entity: 'User',
       entityId: result.entityId,
-      data: {
+      oldData: {
+        blah: 'foo',
+        items: [{ id: 123, amount: 1 }, { id: 124, amount: 2 }],
+      },
+      newData: {
         items: [
           { id: 124, amount: 2 },
           { id: 321, amount: 1 },
@@ -138,7 +143,8 @@ describe('MemoryStore', () => {
     const event2 = await store.updateEntity({
       entity: 'User',
       entityId: event.entityId,
-      data: { blah: 'foo2' },
+      oldData: { blah: 'foo' },
+      newData: { blah: 'foo2' },
     });
 
     expect(event.cursor).not.toBeNull();

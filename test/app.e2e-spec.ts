@@ -291,6 +291,102 @@ describe('EventSource', () => {
       });
   });
 
+  it('update entity with null', () => {
+    return test
+      .post('/graphql')
+      .set('authorization', `Bearer ${jwtToken}`)
+      .send({
+        query: `
+        mutation {
+          createUser(input: {
+            username: "john.doe",
+            password: "xxx",
+          }) {
+            id
+            username
+            password
+          }
+        }
+        `,
+      })
+      .expect(200)
+      .then(res => {
+        const data = res.body.data.createUser;
+        return test
+          .post('/graphql')
+          .set('authorization', `Bearer ${jwtToken}`)
+          .send({
+            query: `
+            mutation ($id: ID!, $input: UserRawUpdateInput!) {
+              updateUser(id: $id, input: $input) {
+                id
+                username
+                password
+                createdAt
+                createdBy
+                updatedAt
+                updatedBy
+                deletedAt
+                deletedBy
+              }
+            }
+            `,
+            variables: {
+              id: data.id,
+              input: {
+                username: 'john.doe2',
+                age: null,
+              },
+            },
+          })
+          .expect(200)
+          .expect(res2 => {
+            const data2 = res2.body.data.updateUser;
+            expect(data2.username).toEqual('john.doe2');
+
+            expect(forwardService.sentMessages.length).toEqual(2);
+            expect(forwardService.sentMessages[0].event.columns).toEqual([
+              'username',
+              'password',
+            ]);
+            expect(
+              forwardService.sentMessages[1].event.oldValues.username,
+            ).toEqual('john.doe');
+            expect(
+              forwardService.sentMessages[1].event.oldValues.age,
+            ).toBeUndefined();
+            expect(
+              forwardService.sentMessages[1].event.newValues.username,
+            ).toEqual('john.doe2');
+            expect(forwardService.sentMessages[1].event.newValues.age).toEqual(
+              null,
+            );
+
+            expect(pubsubService.publishedMessages.length).toEqual(2);
+            expect(pubsubService.publishedMessages[0].event.columns).toEqual([
+              'username',
+              'password',
+            ]);
+            expect(pubsubService.publishedMessages[1].event.columns).toEqual([
+              'username',
+              'age',
+            ]);
+            expect(
+              pubsubService.publishedMessages[1].event.oldValues.username,
+            ).toEqual('john.doe');
+            expect(
+              pubsubService.publishedMessages[1].event.oldValues.age,
+            ).toBeUndefined();
+            expect(
+              pubsubService.publishedMessages[1].event.newValues.username,
+            ).toEqual('john.doe2');
+            expect(
+              pubsubService.publishedMessages[1].event.newValues.age,
+            ).toEqual(null);
+          });
+      });
+  });
+
   it('date changes recognition', () => {
     return test
       .post('/graphql')

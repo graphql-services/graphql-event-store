@@ -113,18 +113,14 @@ export class Store {
   async updateEntity(props: {
     entity: string;
     entityId: string;
-    data: StoreEventData;
+    oldData: StoreEventData;
+    newData: StoreEventData;
     operationName?: string;
     principalId?: string;
   }): Promise<StoreEvent | null> {
-    const events = await this.getEvents(props);
-    if (events.length === 0) {
-      return null;
-    }
+    const currentData = await props.oldData;
 
-    const currentData = await this.mergeEvents(events);
-
-    const sanitizedData = JSON.parse(JSON.stringify(props.data));
+    const sanitizedData = JSON.parse(JSON.stringify(props.newData));
     const newData = Object.assign({}, currentData, sanitizedData);
     const changes = createDiff(currentData, newData);
     log(

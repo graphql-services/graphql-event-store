@@ -91,17 +91,18 @@ export class ResolverService {
         principalId,
       });
 
-      await this.sendEvent({
-        ...event,
-        // data,
-        columns: getChangedColumns(event),
-      });
-
       // this is double fetching of data - could be handled by applying diff
-      return this.store.getEntityData({
+      const newValues = await this.store.getEntityData({
         entity: resource,
         entityId: event.entityId,
       });
+      await this.sendEvent({
+        ...event,
+        newValues,
+        columns: getChangedColumns(event),
+      });
+
+      return newValues;
     };
   }
   updateResolver(resource: string): GraphQLFieldResolver<any, any, any> {
@@ -117,6 +118,9 @@ export class ResolverService {
         entityId: args.id,
       });
 
+      if (!data) {
+        throw new Error(`Entity not found ${resource} - ${args.id}`);
+      }
       if (data && data.deletedAt) {
         throw new Error(`Cannot update deleted entity`);
       }
@@ -124,24 +128,27 @@ export class ResolverService {
       const event = await this.store.updateEntity({
         entity: resource,
         entityId: args.id,
-        data: args.input,
+        oldData: data,
+        newData: args.input,
         operationName: info.operation.name && info.operation.name.value,
         principalId,
       });
 
+      const newValues = await this.store.getEntityData({
+        entity: resource,
+        entityId: args.id,
+      });
       if (event) {
         await this.sendEvent({
           ...event,
-          // data: newData,
+          oldValues: data,
+          newValues,
           columns: getChangedColumns(event),
         });
       }
 
       // this is double fetching of data - could be handled by applying diff
-      return this.store.getEntityData({
-        entity: resource,
-        entityId: args.id,
-      });
+      return newValues;
     };
   }
   deleteResolver(resource: string): GraphQLFieldResolver<any, any, any> {
@@ -171,7 +178,7 @@ export class ResolverService {
       if (event) {
         await this.sendEvent({
           ...event,
-          // data: newData,
+          oldValues: data,
           columns: getChangedColumns(event),
         });
       }

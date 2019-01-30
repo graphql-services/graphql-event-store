@@ -36,6 +36,8 @@ export interface StoreEvent extends StoreEventBase<IChangeItem[] | null> {}
 export interface StoreAggregatedEvent
   extends StoreEventBase<StoreEventData | null> {
   columns: string[];
+  oldValues?: { [key: string]: any };
+  newValues?: { [key: string]: any };
 }
 
 const onlyUnique = (value, index, self) => {
