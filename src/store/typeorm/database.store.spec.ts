@@ -164,7 +164,11 @@ describe('DatabaseStore', () => {
     const events2 = await store.getEvents({ limit: 1 });
     expect(events2.length).toBe(1);
 
-    const events3 = await store.getEvents({ cursor: event.cursor });
+    const events3 = await store.getEvents({ cursorFrom: event.cursor });
     expect(events3.length).toBe(1);
+    expect(events3[0].cursor).toBe(event2.cursor);
+    const events4 = await store.getEvents({ cursorTo: event2.cursor });
+    expect(events4.length).toBe(1);
+    expect(events4[0].cursor).toBe(event.cursor);
   });
 });

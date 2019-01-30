@@ -7,7 +7,8 @@ export class MemoryStore extends Store {
   async getEvents(props: {
     entity?: string;
     entityId?: string;
-    cursor?: string;
+    cursorFrom?: string;
+    cursorTo?: string;
     limit?: number;
     sort?: string;
   }): Promise<StoreEvent[]> {
@@ -17,7 +18,8 @@ export class MemoryStore extends Store {
       e =>
         (!props.entity || e.entity === props.entity) &&
         (!props.entityId || e.entityId === props.entityId) &&
-        (!props.cursor || e.cursor > props.cursor),
+        (!props.cursorFrom || e.cursor > props.cursorFrom) &&
+        (!props.cursorTo || e.cursor < props.cursorTo),
     );
 
     if (typeof props.limit !== 'undefined') {

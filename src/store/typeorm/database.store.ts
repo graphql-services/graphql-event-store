@@ -6,6 +6,8 @@ import {
   ConnectionOptions,
   MoreThan,
   Connection,
+  Between,
+  LessThan,
 } from 'typeorm';
 import { Event } from './model/event.entity';
 import { ENV } from '../../env';
@@ -50,7 +52,8 @@ export class DatabaseStore extends Store {
   async getEvents(props: {
     entity?: string;
     entityId?: string;
-    cursor?: string;
+    cursorFrom?: string;
+    cursorTo?: string;
     limit?: number;
     sort?: string;
   }): Promise<StoreEvent[]> {
@@ -59,7 +62,10 @@ export class DatabaseStore extends Store {
     const where: FindConditions<Event> = {};
     if (props.entity) where.entity = props.entity;
     if (props.entityId) where.entityId = props.entityId;
-    if (props.cursor) where.cursor = MoreThan(props.cursor);
+    if (props.cursorFrom && props.cursorTo)
+      where.cursor = Between(props.cursorFrom, props.cursorTo);
+    else if (props.cursorFrom) where.cursor = MoreThan(props.cursorFrom);
+    else if (props.cursorTo) where.cursor = LessThan(props.cursorTo);
     const order: any = {};
     if (props.sort) {
       const [column, sort] = props.sort.split(':');
@@ -71,7 +77,11 @@ export class DatabaseStore extends Store {
       take: props.limit,
     });
 
-    return events;
+    return events.filter(
+      e =>
+        (!props.cursorFrom || e.cursor !== props.cursorFrom) &&
+        (!props.cursorTo || e.cursor !== props.cursorTo),
+    );
   }
 
   async saveEvent(event: StoreEvent): Promise<void> {

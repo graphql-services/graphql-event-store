@@ -15,7 +15,8 @@ export class Store {
   async getEvents(props: {
     entity?: string;
     entityId?: string;
-    cursor?: string;
+    cursorFrom?: string;
+    cursorTo?: string;
     limit?: number;
     sort?: string;
   }): Promise<StoreEvent[]> {

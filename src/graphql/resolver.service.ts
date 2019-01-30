@@ -33,17 +33,20 @@ export class ResolverService {
     return (
       parent: any,
       args: {
-        entity: string;
-        id: string;
-        cursor: string;
-        limit: number;
-        sort: string;
+        entity?: string;
+        id?: string;
+        cursor?: string;
+        cursorFrom?: string;
+        cursorTo?: string;
+        limit?: number;
+        sort?: string;
       },
     ) => {
       return this.store.getEvents({
         entity: args.entity,
         entityId: args.id,
-        cursor: args.cursor,
+        cursorFrom: args.cursorFrom || args.cursor,
+        cursorTo: args.cursorTo,
         limit: args.limit || 30,
         sort: args.sort,
       });

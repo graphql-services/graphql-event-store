@@ -118,6 +118,14 @@ export class ModelService {
         entity: { type: modelSchema.getEntitiesEnumType() },
         cursor: {
           type: GraphQLString,
+          description: 'Deprecated! User cursorFrom instead',
+        },
+        cursorFrom: {
+          type: GraphQLString,
+          description: 'Fetch items after this cursor',
+        },
+        cursorTo: {
+          type: GraphQLString,
           description: 'Fetch items after this cursor',
         },
         limit: { type: GraphQLInt },
