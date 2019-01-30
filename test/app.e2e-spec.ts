@@ -547,12 +547,11 @@ describe('EventSource', () => {
   });
 
   it('fetch events', () => {
-    return (
-      test
-        .post('/graphql')
-        .set('authorization', `Bearer ${jwtToken}`)
-        .send({
-          query: `
+    return test
+      .post('/graphql')
+      .set('authorization', `Bearer ${jwtToken}`)
+      .send({
+        query: `
             mutation {
               user1:createUser(input: {
                 username: "john.doe",
@@ -572,13 +571,13 @@ describe('EventSource', () => {
               }
             }
             `,
-        })
-        // .expect(200)
-        .then(() => {
-          return test
-            .post('/graphql')
-            .send({
-              query: `
+      })
+      .expect(200)
+      .then(() => {
+        return test
+          .post('/graphql')
+          .send({
+            query: `
             query {
               _events(sort:DATE_DESC) {
                 id
@@ -588,41 +587,46 @@ describe('EventSource', () => {
                 cursor
                 principalId
                 columns
+                oldValues
+                newValues
               }
             }
             `,
-            })
-            .expect(200)
-            .expect(res => {
-              const data = res.body.data._events;
-              expect(data.length).toBe(2);
-              expect(data[0].principalId).not.toBeNull();
-              expect(data[0].columns).toEqual(['username', 'password']);
-            })
-            .then(res => {
-              const data = res.body.data._events;
-              return test
-                .post('/graphql')
-                .send({
-                  query: `
+          })
+          .expect(200)
+          .expect(res => {
+            const data = res.body.data._events;
+            expect(data.length).toBe(2);
+            expect(data[0].principalId).not.toBeNull();
+            expect(data[0].columns).toEqual(['username', 'password']);
+            expect(data[0].oldValues).toBeNull();
+            const newValues = JSON.parse(data[0].newValues);
+            expect(newValues.username).toEqual('john.doe');
+            expect(newValues.createdBy).toEqual('1234567890');
+          })
+          .then(res => {
+            const event = res.body.data._events;
+            return test
+              .post('/graphql')
+              .send({
+                query: `
                 query {
-                  _events(cursor:"${data[0].cursor}",limit:1) {
+                  _events(cursorFrom:"${event[0].cursor}",limit:1) {
                     id
                     principalId
                   }
                 }
                 `,
-                })
-                .expect(200)
-                .expect(res2 => {
-                  const data2 = res2.body.data._events;
-                  expect(data2.length).toBe(1);
-                  expect(data[0].principalId).toEqual(principalId);
-                  expect(data2[0].principalId).toEqual(principalId);
-                });
-            });
-        })
-    );
+              })
+              .expect(200)
+              .expect(res2 => {
+                const data2 = res2.body.data._events;
+                expect(data2.length).toBe(1);
+                expect(event[0].principalId).toEqual(principalId);
+                expect(data2[0].principalId).toEqual(principalId);
+              });
+          });
+      });
   });
 
   it('should provide healthcheck status', async () => {

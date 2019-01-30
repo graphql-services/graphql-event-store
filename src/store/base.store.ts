@@ -17,6 +17,8 @@ export class Store {
     entityId?: string;
     cursorFrom?: string;
     cursorTo?: string;
+    // include events with cursor; default = false
+    includeCursorEvents?: boolean;
     limit?: number;
     sort?: string;
   }): Promise<StoreEvent[]> {
@@ -42,6 +44,9 @@ export class Store {
   async getEntityData(props: {
     entity: string;
     entityId: string;
+    cursorFrom?: string;
+    cursorTo?: string;
+    includeCursorEvents?: boolean;
   }): Promise<StoreEventOutputData | null> {
     const events = await this.getEvents(props);
     const data = await this.mergeEvents(events);

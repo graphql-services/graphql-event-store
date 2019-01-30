@@ -162,5 +162,11 @@ describe('MemoryStore', () => {
     const events4 = await store.getEvents({ cursorTo: event2.cursor });
     expect(events4.length).toBe(1);
     expect(events4[0].cursor).toBe(event.cursor);
+
+    const events5 = await store.getEvents({
+      cursorTo: event2.cursor,
+      includeCursorEvents: true,
+    });
+    expect(events5.length).toBe(2);
   });
 });

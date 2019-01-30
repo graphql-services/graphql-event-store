@@ -112,7 +112,7 @@ export class ModelService {
     }
 
     queryFields._events = {
-      type: modelSchema.getEventType(),
+      type: modelSchema.getEventType(this.resolverService),
       args: {
         id: { type: GraphQLID },
         entity: { type: modelSchema.getEntitiesEnumType() },

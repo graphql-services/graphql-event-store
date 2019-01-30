@@ -10,6 +10,7 @@ import { ForwarderFactory } from '../forwader/forwarder.factory';
 import {
   StoreAggregatedEvent,
   getChangedColumns,
+  StoreEvent,
 } from '../store/store-event.model';
 
 @Injectable()
@@ -200,5 +201,23 @@ export class ResolverService {
         event,
       });
     }
+  }
+  async getOldValues(event: StoreEvent): Promise<{ [key: string]: any }> {
+    const values = await this.store.getEntityData({
+      entity: event.entity,
+      entityId: event.entityId,
+      cursorTo: event.cursor,
+      includeCursorEvents: false,
+    });
+    return values;
+  }
+  async getNewValues(event: StoreEvent): Promise<{ [key: string]: any }> {
+    const values = await this.store.getEntityData({
+      entity: event.entity,
+      entityId: event.entityId,
+      cursorTo: event.cursor,
+      includeCursorEvents: true,
+    });
+    return values;
   }
 }

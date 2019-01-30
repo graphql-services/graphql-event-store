@@ -25,6 +25,7 @@ import { GraphQLDateTime } from 'graphql-iso-date';
 import { GraphQLPasswordHash } from 'gql-directives';
 
 import { StoreEvent, getChangedColumns } from '../store/store-event.model';
+import { ResolverService } from './resolver.service';
 
 const entityInterface = new GraphQLInterfaceType({
   name: 'Entity',
@@ -206,7 +207,7 @@ export class ModelSchema {
   }
 
   private eventType?: GraphQLOutputType;
-  getEventType(): GraphQLOutputType {
+  getEventType(resolver: ResolverService): GraphQLOutputType {
     if (!this.eventType) {
       this.eventType = new GraphQLNonNull(
         new GraphQLList(
@@ -242,6 +243,23 @@ export class ModelSchema {
                     },
                   }),
                 ),
+              },
+              oldValues: {
+                type: GraphQLString,
+                resolve: async (event: StoreEvent): Promise<string> => {
+                  const data = await resolver.getOldValues(event);
+                  if (data === null) {
+                    return null;
+                  }
+                  return JSON.stringify(data);
+                },
+              },
+              newValues: {
+                type: new GraphQLNonNull(GraphQLString),
+                resolve: async (event: StoreEvent): Promise<string> => {
+                  const data = await resolver.getNewValues(event);
+                  return JSON.stringify(data);
+                },
               },
               date: { type: new GraphQLNonNull(GraphQLDateTime) },
               principalId: { type: GraphQLID },

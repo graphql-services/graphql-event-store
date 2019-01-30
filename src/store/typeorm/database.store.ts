@@ -8,6 +8,9 @@ import {
   Connection,
   Between,
   LessThan,
+  MoreThanOrEqual,
+  LessThanOrEqual,
+  Raw,
 } from 'typeorm';
 import { Event } from './model/event.entity';
 import { ENV } from '../../env';
@@ -54,6 +57,7 @@ export class DatabaseStore extends Store {
     entityId?: string;
     cursorFrom?: string;
     cursorTo?: string;
+    includeCursorEvents?: boolean;
     limit?: number;
     sort?: string;
   }): Promise<StoreEvent[]> {
@@ -63,9 +67,18 @@ export class DatabaseStore extends Store {
     if (props.entity) where.entity = props.entity;
     if (props.entityId) where.entityId = props.entityId;
     if (props.cursorFrom && props.cursorTo)
-      where.cursor = Between(props.cursorFrom, props.cursorTo);
-    else if (props.cursorFrom) where.cursor = MoreThan(props.cursorFrom);
-    else if (props.cursorTo) where.cursor = LessThan(props.cursorTo);
+      where.cursor = props.includeCursorEvents
+        ? Raw(`cursor >= ${props.cursorFrom} AND cursor <= ${props.cursorTo}`)
+        : Raw(`cursor > ${props.cursorFrom} AND cursor < ${props.cursorTo}`);
+    else if (props.cursorFrom)
+      where.cursor = props.includeCursorEvents
+        ? MoreThanOrEqual(props.cursorFrom)
+        : MoreThan(props.cursorFrom);
+    else if (props.cursorTo)
+      where.cursor = props.includeCursorEvents
+        ? LessThanOrEqual(props.cursorTo)
+        : LessThan(props.cursorTo);
+
     const order: any = {};
     if (props.sort) {
       const [column, sort] = props.sort.split(':');
@@ -77,11 +90,7 @@ export class DatabaseStore extends Store {
       take: props.limit,
     });
 
-    return events.filter(
-      e =>
-        (!props.cursorFrom || e.cursor !== props.cursorFrom) &&
-        (!props.cursorTo || e.cursor !== props.cursorTo),
-    );
+    return events;
   }
 
   async saveEvent(event: StoreEvent): Promise<void> {
