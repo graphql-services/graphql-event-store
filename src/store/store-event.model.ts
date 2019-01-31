@@ -33,11 +33,30 @@ export interface IChangeItem {
   value: any;
 }
 export interface StoreEvent extends StoreEventBase<IChangeItem[] | null> {}
+
+export interface StoreAggregatedEventValue {
+  name: string;
+  value?: string;
+}
+
+export const objectToEventValue = (obj: {
+  [key: string]: any;
+}): StoreAggregatedEventValue[] => {
+  const values: StoreAggregatedEventValue[] = [];
+  for (const name of Object.keys(obj)) {
+    values.push({
+      name,
+      value: JSON.parse(JSON.stringify(obj[name])),
+    });
+  }
+  return values;
+};
+
 export interface StoreAggregatedEvent
   extends StoreEventBase<StoreEventData | null> {
   columns: string[];
-  oldValues?: { [key: string]: any };
-  newValues?: { [key: string]: any };
+  oldValues: StoreAggregatedEventValue[];
+  newValues: StoreAggregatedEventValue[];
 }
 
 const onlyUnique = (value, index, self) => {

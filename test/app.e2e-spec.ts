@@ -350,17 +350,25 @@ describe('EventSource', () => {
               'password',
             ]);
             expect(
-              forwardService.sentMessages[1].event.oldValues.username,
+              forwardService.sentMessages[1].event.oldValues.filter(
+                x => x.name === 'username',
+              )[0].value,
             ).toEqual('john.doe');
             expect(
-              forwardService.sentMessages[1].event.oldValues.age,
-            ).toBeUndefined();
+              forwardService.sentMessages[1].event.oldValues.filter(
+                x => x.name === 'age',
+              ).length,
+            ).toBe(0);
             expect(
-              forwardService.sentMessages[1].event.newValues.username,
+              forwardService.sentMessages[1].event.newValues.filter(
+                x => x.name === 'username',
+              )[0].value,
             ).toEqual('john.doe2');
-            expect(forwardService.sentMessages[1].event.newValues.age).toEqual(
-              null,
-            );
+            expect(
+              forwardService.sentMessages[1].event.newValues.filter(
+                x => x.name === 'age',
+              )[0].value,
+            ).toEqual(null);
 
             expect(pubsubService.publishedMessages.length).toEqual(2);
             expect(pubsubService.publishedMessages[0].event.columns).toEqual([
@@ -372,16 +380,24 @@ describe('EventSource', () => {
               'age',
             ]);
             expect(
-              pubsubService.publishedMessages[1].event.oldValues.username,
+              pubsubService.publishedMessages[1].event.oldValues.filter(
+                x => x.name === 'username',
+              )[0].value,
             ).toEqual('john.doe');
             expect(
-              pubsubService.publishedMessages[1].event.oldValues.age,
-            ).toBeUndefined();
+              pubsubService.publishedMessages[1].event.oldValues.filter(
+                x => x.name === 'age',
+              ).length,
+            ).toBe(0);
             expect(
-              pubsubService.publishedMessages[1].event.newValues.username,
+              pubsubService.publishedMessages[1].event.newValues.filter(
+                x => x.name === 'username',
+              )[0].value,
             ).toEqual('john.doe2');
             expect(
-              pubsubService.publishedMessages[1].event.newValues.age,
+              pubsubService.publishedMessages[1].event.newValues.filter(
+                x => x.name === 'age',
+              )[0].value,
             ).toEqual(null);
           });
       });
@@ -587,8 +603,8 @@ describe('EventSource', () => {
                 cursor
                 principalId
                 columns
-                oldValues
-                newValues
+                oldValues { name value }
+                newValues { name value }
               }
             }
             `,
@@ -599,10 +615,13 @@ describe('EventSource', () => {
             expect(data.length).toBe(2);
             expect(data[0].principalId).not.toBeNull();
             expect(data[0].columns).toEqual(['username', 'password']);
-            expect(data[0].oldValues).toBeNull();
-            const newValues = JSON.parse(data[0].newValues);
-            expect(newValues.username).toEqual('john.doe');
-            expect(newValues.createdBy).toEqual('1234567890');
+            expect(data[0].oldValues.length).toBe(0);
+            expect(
+              data[0].newValues.filter(x => x.name === 'username')[0].value,
+            ).toEqual('john.doe');
+            expect(
+              data[0].newValues.filter(x => x.name === 'createdBy')[0].value,
+            ).toEqual('1234567890');
           })
           .then(res => {
             const event = res.body.data._events;

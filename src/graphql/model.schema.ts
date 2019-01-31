@@ -24,7 +24,12 @@ import {
 import { GraphQLDateTime } from 'graphql-iso-date';
 import { GraphQLPasswordHash } from 'gql-directives';
 
-import { StoreEvent, getChangedColumns } from '../store/store-event.model';
+import {
+  StoreEvent,
+  getChangedColumns,
+  StoreAggregatedEventValue,
+  objectToEventValue,
+} from '../store/store-event.model';
 import { ResolverService } from './resolver.service';
 
 const entityInterface = new GraphQLInterfaceType({
@@ -209,6 +214,20 @@ export class ModelSchema {
   private eventType?: GraphQLOutputType;
   getEventType(resolver: ResolverService): GraphQLOutputType {
     if (!this.eventType) {
+      const eventValueType = new GraphQLObjectType({
+        name: 'EventStoreEventValue',
+        fields: {
+          name: {
+            type: new GraphQLNonNull(GraphQLString),
+            description: 'Column name of changed value',
+          },
+          value: {
+            type: GraphQLString,
+            description: 'JSON serialized value of column',
+          },
+        },
+      });
+
       this.eventType = new GraphQLNonNull(
         new GraphQLList(
           new GraphQLObjectType({
@@ -245,20 +264,28 @@ export class ModelSchema {
                 ),
               },
               oldValues: {
-                type: GraphQLString,
-                resolve: async (event: StoreEvent): Promise<string> => {
+                type: new GraphQLNonNull(
+                  new GraphQLList(new GraphQLNonNull(eventValueType)),
+                ),
+                resolve: async (
+                  event: StoreEvent,
+                ): Promise<StoreAggregatedEventValue[]> => {
                   const data = await resolver.getOldValues(event);
                   if (data === null) {
-                    return null;
+                    return [];
                   }
-                  return JSON.stringify(data);
+                  return objectToEventValue(data);
                 },
               },
               newValues: {
-                type: new GraphQLNonNull(GraphQLString),
-                resolve: async (event: StoreEvent): Promise<string> => {
+                type: new GraphQLNonNull(
+                  new GraphQLList(new GraphQLNonNull(eventValueType)),
+                ),
+                resolve: async (
+                  event: StoreEvent,
+                ): Promise<StoreAggregatedEventValue[]> => {
                   const data = await resolver.getNewValues(event);
-                  return JSON.stringify(data);
+                  return objectToEventValue(data);
                 },
               },
               date: { type: new GraphQLNonNull(GraphQLDateTime) },

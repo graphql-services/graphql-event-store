@@ -11,6 +11,8 @@ import {
   StoreAggregatedEvent,
   getChangedColumns,
   StoreEvent,
+  StoreAggregatedEventValue,
+  objectToEventValue,
 } from '../store/store-event.model';
 
 @Injectable()
@@ -96,17 +98,18 @@ export class ResolverService {
       });
 
       // this is double fetching of data - could be handled by applying diff
-      const newValues = await this.store.getEntityData({
+      const newData = await this.store.getEntityData({
         entity: resource,
         entityId: event.entityId,
       });
       await this.sendEvent({
         ...event,
-        newValues,
+        oldValues: [],
+        newValues: objectToEventValue(newData),
         columns: getChangedColumns(event),
       });
 
-      return newValues;
+      return newData;
     };
   }
   updateResolver(resource: string): GraphQLFieldResolver<any, any, any> {
@@ -138,21 +141,21 @@ export class ResolverService {
         principalId,
       });
 
-      const newValues = await this.store.getEntityData({
+      const newData = await this.store.getEntityData({
         entity: resource,
         entityId: args.id,
       });
       if (event) {
         await this.sendEvent({
           ...event,
-          oldValues: data,
-          newValues,
+          oldValues: objectToEventValue(data),
+          newValues: objectToEventValue(newData),
           columns: getChangedColumns(event),
         });
       }
 
       // this is double fetching of data - could be handled by applying diff
-      return newValues;
+      return newData;
     };
   }
   deleteResolver(resource: string): GraphQLFieldResolver<any, any, any> {
@@ -182,7 +185,8 @@ export class ResolverService {
       if (event) {
         await this.sendEvent({
           ...event,
-          oldValues: data,
+          oldValues: objectToEventValue(data),
+          newValues: [],
           columns: getChangedColumns(event),
         });
       }
