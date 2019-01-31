@@ -44,9 +44,13 @@ export const objectToEventValue = (obj: {
 }): StoreAggregatedEventValue[] => {
   const values: StoreAggregatedEventValue[] = [];
   for (const name of Object.keys(obj)) {
+    const value =
+      typeof obj[name] === 'string' || obj[name] === null
+        ? obj[name]
+        : JSON.stringify(obj[name]);
     values.push({
       name,
-      value: JSON.parse(JSON.stringify(obj[name])),
+      value,
     });
   }
   return values;
