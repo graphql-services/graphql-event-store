@@ -44,7 +44,6 @@ export class Store {
   async getEntityData(props: {
     entity: string;
     entityId: string;
-    cursorFrom?: string;
     cursorTo?: string;
     includeCursorEvents?: boolean;
   }): Promise<StoreEventOutputData | null> {
